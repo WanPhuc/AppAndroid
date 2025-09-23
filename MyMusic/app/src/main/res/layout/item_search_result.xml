@@ -1,0 +1,43 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="8dp">
+    <ImageView
+        android:id="@+id/iv_item"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:background="@drawable/artist"/>
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/imgArtist"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/artist"
+        android:visibility="gone"
+        app:shapeAppearanceOverlay="@style/CircleImageView" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginLeft="20dp">
+    <TextView
+        android:id="@+id/tv_textMain"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Artist"
+        android:textColor="@color/white"
+        android:textSize="25sp" />
+    <TextView
+        android:id="@+id/tv_textSecond"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Nghe si"
+        android:textColor="@color/white"
+        android:layout_marginTop="25dp"
+        android:textSize="15dp"/>
+
+    </LinearLayout>
+</LinearLayout>
