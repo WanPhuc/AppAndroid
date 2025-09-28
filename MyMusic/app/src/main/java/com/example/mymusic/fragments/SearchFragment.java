@@ -1,9 +1,11 @@
 package com.example.mymusic.fragments;
 
+import android.app.appsearch.SearchResult;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -26,6 +28,8 @@ public class SearchFragment extends Fragment {
     private RecyclerView recyclerView;
     private SearchAdapter adapter;
     private MusicRepository repo;
+    private SearchView searchView;
+    private FrameLayout frameLayout;
 
     private final ArrayList<Song> allSongs = new ArrayList<>();
     private final ArrayList<Artist> allArtists = new ArrayList<>();
@@ -39,7 +43,8 @@ public class SearchFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_search, container, false);
 
         recyclerView = view.findViewById(R.id.recyclerSearch);
-        SearchView searchView = view.findViewById(R.id.searchView);
+        searchView = view.findViewById(R.id.searchView);
+        frameLayout= view.findViewById(R.id.containerResult);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new SearchAdapter(getContext(), new ArrayList<>());
@@ -47,19 +52,29 @@ public class SearchFragment extends Fragment {
 
         repo = new MusicRepository();
 
-        // Load data từ Firestore
-        repo.getAllSongs(result -> {
-            allSongs.clear();
-            allSongs.addAll(result);
+        // load fragment kết quả ngay từ đầu (ẩn sẵn)
+        getChildFragmentManager().beginTransaction()
+                .replace(R.id.containerResult, new SearchResultFragment())
+                .commit();
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                showResult(query);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                if (newText.trim().isEmpty()) {
+                    showDefault();
+                } else {
+                    showResult(newText);
+                }
+                return true;
+            }
         });
 
-        repo.getAllArtists(result -> {
-            allArtists.clear();
-            allArtists.addAll(result);
-        });
-
-
-        // Load mặc định khi chưa search
         loadDefaultData();
 
         return view;
@@ -71,13 +86,34 @@ public class SearchFragment extends Fragment {
         repo.getAllArtists(artists -> {
             items.add("Nghệ sĩ thịnh hành");
             items.add(artists); // giữ nguyên thành list<Artist>
+            repo.getAllPlaylistsByType(types ->{
+                items.add("Khám phá theo chủ đề");
+                items.add(new ArrayList<>(types));
 
-            repo.getAllGenres(genres -> {
-                items.add("Khám phá thể loại");
-                items.add(new ArrayList<>(genres)); // giữ nguyên thành list<String>
-                adapter.updateData(items);
+                repo.getAllGenres(genres -> {
+                    items.add("Khám phá thể loại");
+                    items.add(new ArrayList<>(genres));
+                    adapter.updateData(items);
+                });
             });
+
         });
+    }
+    private void showResult(String query) {
+        recyclerView.setVisibility(View.GONE);
+        frameLayout.setVisibility(View.VISIBLE);
+
+        SearchResultFragment resultFragment = (SearchResultFragment)
+                getChildFragmentManager().findFragmentById(R.id.containerResult);
+
+        if (resultFragment != null) {
+            resultFragment.search(query);
+        }
+    }
+
+    private void showDefault() {
+        recyclerView.setVisibility(View.VISIBLE);
+        frameLayout.setVisibility(View.GONE);
     }
 
 }

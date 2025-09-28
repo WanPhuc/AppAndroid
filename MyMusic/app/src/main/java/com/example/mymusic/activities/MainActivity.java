@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
         });
         viewPager2 = findViewById(R.id.vp_fragmain);
         bottomNavigationView = findViewById(R.id.bottom_bar);
-
+        viewPager2.setUserInputEnabled(false);
         MainAdapter adapter=new MainAdapter(this);
         viewPager2.setAdapter(adapter);
         setupNavigation();

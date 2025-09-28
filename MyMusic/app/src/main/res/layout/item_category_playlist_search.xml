@@ -1,14 +1,15 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="100dp"
-    android:background="@color/teal_200"
     android:gravity="center"
     android:orientation="vertical"
     android:padding="16dp"
-    android:layout_margin="8dp">
+    android:layout_margin="8dp"
+    android:background="@drawable/bg_item_category">
 
     <TextView
-        android:id="@+id/tvCategoryName"
+        android:id="@+id/tvCategoryPlaylistName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Pop"

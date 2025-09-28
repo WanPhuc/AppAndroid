@@ -8,11 +8,11 @@ public class Song {
     private String coverUrl;
     private String fileUrl;
     private String year;
-    private String duration;
+    private int duration;
     private String lyrics;
 
     public Song(){}
-    public Song(String songID, String title, String artistID, String genre, String coverUrl, String fileUrl, String year, String duration, String lyrics){
+    public Song(String songID, String title, String artistID, String genre, String coverUrl, String fileUrl, String year, int duration, String lyrics){
         this.songID = songID;
         this.title = title;
         this.artistID = artistID;
@@ -37,8 +37,8 @@ public class Song {
     public void setFileUrl(String fileUrl) {this.fileUrl = fileUrl;}
     public String getYear() {return year;}
     public void setYear(String year) {this.year = year;}
-    public String getDuration() {return duration;}
-    public void setDuration(String duration) {this.duration = duration;}
+    public int getDuration() {return duration;}
+    public void setDuration(int duration) {this.duration = duration;}
     public String getLyrics() {return lyrics;}
     public void setLyrics(String lyrics) {this.lyrics = lyrics;}
 }

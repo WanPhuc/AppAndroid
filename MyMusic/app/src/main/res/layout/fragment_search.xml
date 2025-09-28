@@ -13,11 +13,7 @@
         android:textColor="@color/white"
         android:textSize="30dp"
         android:layout_marginTop="10dp"/>
-    <FrameLayout
-        android:id="@+id/result_container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone"/>
+
 
     <androidx.appcompat.widget.SearchView
         android:id="@+id/searchView"
@@ -27,7 +23,12 @@
         android:queryHint="Bạn đang tìm gì?"
         android:background="@color/white"/>
 
-
+    <FrameLayout
+        android:id="@+id/containerResult"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:visibility="gone"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerSearch"
