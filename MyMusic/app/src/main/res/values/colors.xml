@@ -9,6 +9,11 @@
     <color name="teal_200">#FF03DAC5</color>
     <color name="teal_700">#FF018786</color>
     <color name="dang_ky_ngay">#0249FD</color>
+    <color name="select_song_play">#0EFF00</color>
+    <color name="filter_selected">#FF5722</color> <!-- cam -->
+    <color name="filter_unselected">#000000</color> <!-- xám nhạt -->
+    <color name="red">#FFFF0000</color>
+
 
 
 </resources>

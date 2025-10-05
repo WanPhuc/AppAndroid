@@ -26,6 +26,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -134,6 +135,9 @@ public class SignUpFragment extends Fragment {
                                 Map<String, Object> userData = new HashMap<>();
                                 userData.put("username", username);
                                 userData.put("email", email);
+                                userData.put("favorites", new ArrayList<>());
+                                userData.put("playlists", new ArrayList<>());
+                                userData.put("followingPlaylists", new ArrayList<>());
 
                                 db.collection("Users").document(userID)
                                         .set(userData)

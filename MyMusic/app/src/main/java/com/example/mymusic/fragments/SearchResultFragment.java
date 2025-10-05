@@ -61,8 +61,8 @@ public class SearchResultFragment extends Fragment {
 
         String lowerQuery = query.toLowerCase(Locale.ROOT);
 
-        repo.getAllArtists(artists -> {
-            repo.getAllSongs(songs -> {
+        repo.listenAllArtists(artists -> {
+            repo.listenAllSongs(songs -> {
                 List<SearchItem> result = new ArrayList<>();
 
                 // --- Tìm theo Artist ---

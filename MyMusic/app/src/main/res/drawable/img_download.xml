@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Nền gradient -->
+    <path
+        android:pathData="M0,0h24v24h-24z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="0"
+                android:startY="0"
+                android:endX="24"
+                android:endY="24"
+                android:startColor="#673AB7"
+                android:endColor="#A5D6A7" />
+        </aapt:attr>
+    </path>
+
+    <!-- Icon tải về -->
+    <group
+        android:scaleX="0.5"
+        android:scaleY="0.5"
+        android:translateX="6"
+        android:translateY="6">
+
+        <!-- Thân mũi tên -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M11,1h2v14h-2z" />
+
+        <!-- Đầu mũi tên -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M6,11l6,6 6,-6 -1.41,-1.41L12,14.17 7.41,9.59 6,11z" />
+
+        <!-- Thanh ngang dưới -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M5,20h14v2H5z" />
+    </group>
+</vector>
+

@@ -2,79 +2,135 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@drawable/bg_btnlogin"
-    android:padding="15dp">
-    <LinearLayout
+    android:orientation="vertical">
+
+    <FrameLayout
+        android:id="@+id/ln_header"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:layout_height="250dp"
         android:layout_weight="1">
-    <ImageButton
-        android:id="@+id/btn_back"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:background="@drawable/ic_arrow_back"
-        android:contentDescription="Back"
-        android:layout_marginBottom="16dp"
-        />
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_weight="1">
+
+        <!-- Ảnh nền full -->
+        <ImageView
+            android:id="@+id/img_header_bg"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:src="@drawable/artist"
+            android:adjustViewBounds="true"/>
+
+        <!-- Lớp phủ mờ -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#80000000"/>
+
+        <!-- Nút back trên góc -->
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_arrow_back"
+            android:contentDescription="Back"
+            android:layout_margin="16dp"
+            android:layout_gravity="start|top"/>
+
+        <!-- Text ở dưới cùng -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:gravity="center_horizontal"
+            android:layout_gravity="bottom">
 
             <TextView
                 android:id="@+id/tv_textbiggenre"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="genre"
+                android:gravity="center"
+                android:text="Tên thể loại"
+                android:textColor="@android:color/white"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/tv_nameArtist"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tên nghệ sĩ"
                 android:textSize="50dp"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
                 android:gravity="center"/>
-        <TextView
-            android:id="@+id/tv_textsmallgenre"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Đây là danh sách các playlist thuộc thể loại này"
-            android:layout_marginTop="8dp"
-            />
-    </LinearLayout>
+
+            <TextView
+                android:id="@+id/tv_textsmallgenre"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Mô tả thể loại hoặc artist"
+                android:textSize="14sp"
+                android:textColor="@android:color/white"
+                android:gravity="center"
+                android:layout_marginTop="4dp"/>
+        </LinearLayout>
+    </FrameLayout>
+
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="50dp">
+        android:layout_height="50dp"
+        android:layout_marginTop="10dp">
+
         <ImageView
             android:id="@+id/img_song"
             android:layout_width="40dp"
             android:layout_height="50dp"
-            android:background="@drawable/song"/>
+            android:src="@drawable/img_default_song"
+            android:scaleType="centerCrop"/>
+
         <ImageButton
             android:id="@+id/btn_addlibrary"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/ic_add_library"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_add_library"
             android:layout_centerVertical="true"
             android:layout_marginLeft="20dp"
             android:layout_toRightOf="@id/img_song"/>
         <ImageButton
+            android:id="@+id/btn_more_category"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_more"
+            android:layout_toRightOf="@+id/btn_addlibrary"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="20dp"/>
+
+        <ImageButton
             android:id="@+id/btn_shuffle"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:background="@drawable/ic_shuffle_disabled"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_shuffle_disabled"
             android:layout_centerVertical="true"
             android:layout_toStartOf="@id/btn_play"/>
+
         <ImageButton
             android:id="@+id/btn_play"
             android:layout_width="50dp"
             android:layout_height="match_parent"
-            android:background="@drawable/ic_play"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_play"
             android:layout_gravity="center"
             android:layout_alignParentEnd="true"/>
     </RelativeLayout>
-    </LinearLayout>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rcv_category_playlist"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"/>
-
 </LinearLayout>

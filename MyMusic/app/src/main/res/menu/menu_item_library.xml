@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/pin"
+        android:title="Ghim danh sách"/>
+    <item
+        android:id="@+id/rename"
+        android:title="Đổi tên danh sách"/>
+    <item
+        android:id="@+id/ispublic"
+        android:title="Công khai"/>
+    <item
+        android:id="@+id/unfollow"
+        android:title="Bỏ theo dõi"/>
+    <item
+        android:id="@+id/delete"
+        android:title="Xóa danh sách"/>
+
+</menu>

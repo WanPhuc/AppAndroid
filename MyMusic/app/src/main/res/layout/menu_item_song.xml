@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/btn_add_to_favorites"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="❤️ Thêm vào bài hát yêu thích"
+        android:textSize="16sp"
+        android:textColor="@color/white"
+        android:padding="12dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?attr/selectableItemBackground" />
+
+    <TextView
+        android:id="@+id/btn_add_playlist"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="➕ Thêm vào playlist"
+        android:textSize="16sp"
+        android:textColor="@color/white"
+        android:padding="12dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?attr/selectableItemBackground" />
+
+    <TextView
+        android:id="@+id/btn_remove_playlist"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="🚫 Xóa khỏi playlist này"
+        android:textSize="16sp"
+        android:textColor="@color/white"
+        android:padding="12dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?attr/selectableItemBackground" />
+
+    <TextView
+        android:id="@+id/btn_download_song"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="⬇️ Tải bài hát"
+        android:textSize="16sp"
+        android:textColor="@color/white"
+        android:padding="12dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?attr/selectableItemBackground" />
+
+    <TextView
+        android:id="@+id/btn_share"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="📤 Chia sẻ"
+        android:textSize="16sp"
+        android:textColor="@color/white"
+        android:padding="12dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?attr/selectableItemBackground" />
+
+    <TextView
+        android:id="@+id/btn_close_menu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="❌ Đóng"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        android:padding="12dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?attr/selectableItemBackground" />
+
+</LinearLayout>

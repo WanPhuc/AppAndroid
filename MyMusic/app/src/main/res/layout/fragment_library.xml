@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="10dp">
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:fontFamily="sans-serif-black"
+        android:text="Thư Viện"
+        android:textColor="@color/white"
+        android:textSize="30dp" />
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_addPlaylist_library"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@drawable/ic_add_library"
+            android:layout_alignParentRight="true" />
+    <HorizontalScrollView
+        android:id="@+id/horizontalScrollFilters"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/textView"
+        android:layout_marginTop="20dp"
+        android:scrollbars="none">
+    <LinearLayout
+        android:id="@+id/linearLayoutFilter"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_below="@id/textView"
+        >
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/ic_cancel"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:background="@drawable/ic_cancel_circle"
+            android:visibility="gone" />
+        <TextView
+            android:id="@+id/tv_filterlibrary_dsp"
+            android:layout_width="120dp"
+            android:layout_height="30dp"
+            android:text="Danh Sách Phát"
+            android:textColor="@color/white"
+            android:background="@drawable/bg_filterlibrary_unselect"
+            android:gravity="center"
+            android:layout_marginLeft="10dp" />
+
+        <TextView
+            android:id="@+id/tv_filterlibrary_cb"
+            android:layout_width="70dp"
+            android:layout_height="30dp"
+            android:layout_marginLeft="10dp"
+            android:background="@drawable/bg_filterlibrary_unselect"
+            android:gravity="center"
+            android:text="Của bạn"
+            android:textColor="@color/white"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/tv_filterlibrary_maymusic"
+            android:layout_width="90dp"
+            android:layout_height="30dp"
+            android:layout_marginLeft="10dp"
+            android:background="@drawable/bg_filterlibrary_unselect"
+            android:gravity="center"
+            android:text="MayMusic"
+            android:textColor="@color/white"
+            android:visibility="gone" />
+        <TextView
+            android:id="@+id/tv_filterlibrary_td"
+            android:layout_width="80dp"
+            android:layout_height="30dp"
+            android:layout_marginLeft="10dp"
+            android:gravity="center"
+            android:background="@drawable/bg_filterlibrary_unselect"
+            android:text="Theo dõi"
+            android:textColor="@color/white"
+            android:visibility="gone"/>
+        <TextView
+            android:id="@+id/tv_filterlibrary_ns"
+            android:layout_width="70dp"
+            android:layout_height="30dp"
+            android:text="Nghệ Sĩ"
+            android:textColor="@color/white"
+            android:background="@drawable/bg_filterlibrary_unselect"
+            android:gravity="center"
+            android:layout_marginLeft="10dp" />
+    </LinearLayout>
+    </HorizontalScrollView>
+    <LinearLayout
+        android:id="@+id/ln_sort"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/horizontalScrollFilters">
+        <TextView
+            android:id="@+id/tv_sortby"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="↓↑ Mặc định"
+            android:fontFamily="sans-serif-medium"
+            android:textSize="16dp"
+            android:textColor="@color/white"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="10dp"/>
+    </LinearLayout>
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_library"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/ln_sort"
+        android:layout_marginTop="10dp" />
+
+
+</RelativeLayout>

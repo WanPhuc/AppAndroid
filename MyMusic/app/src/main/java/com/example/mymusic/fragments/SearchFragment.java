@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.mymusic.R;
 import com.example.mymusic.adapters.SearchAdapter;
 import com.example.mymusic.models.Artist;
+import com.example.mymusic.models.Playlist;
 import com.example.mymusic.models.Song;
 import com.example.mymusic.repository.MusicRepository;
 import androidx.appcompat.widget.SearchView;
@@ -33,6 +34,9 @@ public class SearchFragment extends Fragment {
 
     private final ArrayList<Song> allSongs = new ArrayList<>();
     private final ArrayList<Artist> allArtists = new ArrayList<>();
+    private final List<Artist> cachedArtists = new ArrayList<>();
+    private final List<Playlist> cachedPlaylists = new ArrayList<>();
+    private final List<String> cachedGenres = new ArrayList<>();
 
     @Nullable
     @Override
@@ -81,24 +85,46 @@ public class SearchFragment extends Fragment {
     }
 
     private void loadDefaultData() {
-        List<Object> items = new ArrayList<>();
+        repo.listenAllArtists(artists -> {
+            cachedArtists.clear();
+            cachedArtists.addAll(artists);
+            updateItems();
+        });
 
-        repo.getAllArtists(artists -> {
-            items.add("Nghệ sĩ thịnh hành");
-            items.add(artists); // giữ nguyên thành list<Artist>
-            repo.getAllPlaylistsByType(types ->{
-                items.add("Khám phá theo chủ đề");
-                items.add(new ArrayList<>(types));
+        repo.listenPlaylistsByType(playlists -> {
+            cachedPlaylists.clear();
+            cachedPlaylists.addAll(playlists);
+            updateItems();
+        });
 
-                repo.getAllGenres(genres -> {
-                    items.add("Khám phá thể loại");
-                    items.add(new ArrayList<>(genres));
-                    adapter.updateData(items);
-                });
-            });
-
+        repo.listenAllGenres(genres -> {
+            cachedGenres.clear();
+            cachedGenres.addAll(genres);
+            updateItems();
         });
     }
+
+    private void updateItems() {
+        List<Object> items = new ArrayList<>();
+
+        if (!cachedArtists.isEmpty()) {
+            items.add("Nghệ sĩ thịnh hành");
+            items.add(new ArrayList<>(cachedArtists));
+        }
+
+        if (!cachedPlaylists.isEmpty()) {
+            items.add("Khám phá theo chủ đề");
+            items.add(new ArrayList<>(cachedPlaylists));
+        }
+
+        if (!cachedGenres.isEmpty()) {
+            items.add("Khám phá thể loại");
+            items.add(new ArrayList<>(cachedGenres));
+        }
+
+        adapter.updateData(items);
+    }
+
     private void showResult(String query) {
         recyclerView.setVisibility(View.GONE);
         frameLayout.setVisibility(View.VISIBLE);

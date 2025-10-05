@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Sort theo mặc định (Followed > Date > Alphabet) -->
+    <item
+        android:id="@+id/action_sort_default"
+        android:title="Mặc định" />
+
+    <!-- Sort theo ngày tạo (mới nhất trước) -->
+    <item
+        android:id="@+id/action_sort_date"
+        android:title="Mới thêm gần đây" />
+
+    <!-- Sort theo tên A-Z -->
+    <item
+        android:id="@+id/action_sort_name_az"
+        android:title="Tên (A → Z)" />
+
+
+
+</menu>

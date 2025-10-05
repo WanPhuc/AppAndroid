@@ -12,6 +12,8 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.example.mymusic.R;
 import com.example.mymusic.adapters.MainAdapter;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreSettings;
 
 public class MainActivity extends AppCompatActivity {
     private ViewPager2 viewPager2;
@@ -20,6 +22,18 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // --- BẮT ĐẦU: Kích hoạt Firestore Offline Persistence ---
+        // Thao tác này phải được thực hiện trước bất kỳ truy cập nào vào Firestore
+        // để đảm bảo ứng dụng có thể hoạt động khi không có mạng.
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
+                .setPersistenceEnabled(true)
+                .setCacheSizeBytes(FirebaseFirestoreSettings.CACHE_SIZE_UNLIMITED) // Tùy chọn: Tăng giới hạn cache
+                .build();
+        db.setFirestoreSettings(settings);
+        // --- KẾT THÚC ---
+
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
