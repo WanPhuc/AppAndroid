@@ -1,7 +1,11 @@
 package com.example.mymusic.fragments;
 
-import android.media.MediaPlayer;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,6 +31,7 @@ import com.example.mymusic.models.Playlist;
 import com.example.mymusic.models.Song;
 import com.example.mymusic.models.User;
 import com.example.mymusic.repository.MusicRepository;
+import com.example.mymusic.services.MusicPlayerService;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -37,9 +42,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
-public class CategoryPlaylistFragment extends Fragment {
+public class CategoryPlaylistFragment extends Fragment implements MusicPlayerService.PlayerListener {
     private TextView categoryPlaylistTittle, categoryPlaylistDescription, tvNameArtist;
     private ImageButton btnBack, btnAddLibrary, btnShuffle, btnPlay;
     private ImageView imgSong, imgHeaderBg;
@@ -51,13 +55,29 @@ public class CategoryPlaylistFragment extends Fragment {
     private ArrayList<Playlist> playList = new ArrayList<>();
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private MusicRepository musicRepository = new MusicRepository();
-    private MediaPlayer mediaPlayer;
-    private boolean isPlaying = false;
-    private boolean isShuffle = false;
-    private Song currentSong;
     private boolean isFollowing = false; // trạng thái follow
     private boolean isDownloadedPlaylist = false;
     private boolean isFavoritesPlaylist = false; // Flag for favorites playlist
+
+    private MusicPlayerService musicPlayerService;
+    private boolean isServiceBound = false;
+
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            MusicPlayerService.MusicPlayerBinder binder = (MusicPlayerService.MusicPlayerBinder) service;
+            musicPlayerService = binder.getService();
+            musicPlayerService.setPlayerListener(CategoryPlaylistFragment.this);
+            isServiceBound = true;
+            updateUI();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            isServiceBound = false;
+        }
+    };
+
 
     public static CategoryPlaylistFragment newInstance(String type, String value) {
         CategoryPlaylistFragment fragment = new CategoryPlaylistFragment();
@@ -121,27 +141,34 @@ public class CategoryPlaylistFragment extends Fragment {
             }
         });
 
-        songAdapter.setOnSongClickListener((song, position) -> playSong(song));
+        songAdapter.setOnSongClickListener((song, position) -> {
+            if (isServiceBound) {
+                musicPlayerService.setSongs(songsList);
+                musicPlayerService.playSong(song);
+                songAdapter.setSelectedPosition(position);
+            }
+        });
 
-        btnPlay.setOnClickListener(v -> btnPlayClick());
+        btnPlay.setOnClickListener(v -> {
+            if (isServiceBound) {
+                 if (musicPlayerService.getCurrentSong() == null && !songsList.isEmpty()) {
+                    musicPlayerService.setSongs(songsList);
+                }
+                musicPlayerService.playPause();
+            }
+        });
 
         btnShuffle.setOnClickListener(v -> {
-            isShuffle = !isShuffle;
-            btnShuffle.setImageResource(isShuffle ? R.drawable.ic_shuffle_on : R.drawable.ic_shuffle_disabled);
+            if (isServiceBound) {
+                 if (musicPlayerService.getCurrentSong() == null && !songsList.isEmpty()) {
+                    musicPlayerService.setSongs(songsList);
+                }
+                musicPlayerService.toggleShuffle();
+                btnShuffle.setImageResource(musicPlayerService.isShuffling() ? R.drawable.ic_shuffle_on : R.drawable.ic_shuffle_disabled);
+            }
         });
 
         btnBack.setOnClickListener(v -> {
-            if (mediaPlayer != null) {
-                if (mediaPlayer.isPlaying()) {
-                    mediaPlayer.stop();
-                }
-                mediaPlayer.release();
-                mediaPlayer = null;
-            }
-            isPlaying = false;
-            btnPlay.setImageResource(R.drawable.ic_play);
-            currentSong = null;
-
             ViewPager2 viewPager = requireActivity().findViewById(R.id.vp_fragmain);
             viewPager.setCurrentItem(2, true); // tab LibraryFragment
         });
@@ -162,6 +189,22 @@ public class CategoryPlaylistFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        Intent intent = new Intent(getActivity(), MusicPlayerService.class);
+        getActivity().bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (isServiceBound) {
+            getActivity().unbindService(serviceConnection);
+            isServiceBound = false;
+        }
+    }
+
     private void loadFavoriteSongs() {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser == null) {
@@ -176,7 +219,7 @@ public class CategoryPlaylistFragment extends Fragment {
         categoryPlaylistDescription.setText("Danh sách các bài hát bạn đã thích");
         btnAddLibrary.setVisibility(View.GONE);
         tvNameArtist.setVisibility(View.GONE);
-        imgHeaderBg.setVisibility(View.GONE);
+        Glide.with(requireContext()).load(R.drawable.img_favorit).into(imgHeaderBg);
 
         db.collection("Users").document(currentUserId).get().addOnSuccessListener(documentSnapshot -> {
             if (documentSnapshot.exists()) {
@@ -207,7 +250,7 @@ public class CategoryPlaylistFragment extends Fragment {
         categoryPlaylistDescription.setText("Danh sách các bài hát bạn đã tải về");
         btnAddLibrary.setVisibility(View.GONE);
         tvNameArtist.setVisibility(View.GONE);
-        imgHeaderBg.setVisibility(View.GONE);
+        Glide.with(requireContext()).load(R.drawable.img_download).into(imgHeaderBg);
 
         SongDownloadManager downloadManager = SongDownloadManager.getInstance(getContext());
         List<String> downloadedSongIds = downloadManager.getDownloadedSongIds();
@@ -294,94 +337,6 @@ public class CategoryPlaylistFragment extends Fragment {
         }
     }
 
-
-    // --------------------- PLAYER LOGIC -----------------------
-    private void playSong(Song song) {
-        try {
-            if (mediaPlayer != null) {
-                mediaPlayer.stop();
-                mediaPlayer.release();
-            }
-            mediaPlayer = new MediaPlayer();
-
-            if (isDownloadedPlaylist) {
-                SongDownloadManager downloadManager = SongDownloadManager.getInstance(getContext());
-                File songFile = downloadManager.getSongFile(song.getSongID());
-                if (songFile != null && songFile.exists()) {
-                    mediaPlayer.setDataSource(songFile.getAbsolutePath());
-                } else {
-                    Toast.makeText(getContext(), "Không tìm thấy file nhạc đã tải", Toast.LENGTH_SHORT).show();
-                    // Optionally, play from network if file is missing
-                    mediaPlayer.setDataSource(song.getFileUrl());
-                }
-            } else {
-                mediaPlayer.setDataSource(song.getFileUrl());
-            }
-
-            mediaPlayer.prepareAsync();
-            mediaPlayer.setOnPreparedListener(MediaPlayer::start);
-
-            isPlaying = true;
-            btnPlay.setImageResource(R.drawable.ic_pause);
-            currentSong = song;
-
-            if (getContext() != null && imgSong != null && song.getCoverUrl() != null) {
-                Glide.with(requireContext())
-                        .load(song.getCoverUrl())
-                        .placeholder(R.drawable.img_default_song)
-                        .into(imgSong);
-            }
-
-            mediaPlayer.setOnCompletionListener(mp -> {
-                isPlaying = false;
-                btnPlay.setImageResource(R.drawable.ic_play);
-
-                if (songsList == null || songsList.isEmpty()) return;
-                int currentIndex = songsList.indexOf(currentSong);
-
-                if (isShuffle) {
-                    int randomIndex = new Random().nextInt(songsList.size());
-                    if (songAdapter != null) songAdapter.setSelectedPosition(randomIndex);
-                    playSong(songsList.get(randomIndex));
-                } else {
-                    if (currentIndex != -1 && currentIndex < songsList.size() - 1) {
-                        if (songAdapter != null) songAdapter.setSelectedPosition(currentIndex + 1);
-                        playSong(songsList.get(currentIndex + 1));
-                    }
-                }
-            });
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            Toast.makeText(getContext(), "Error playing song", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    public void btnPlayClick() {
-        if (songsList == null || songsList.isEmpty()) {
-            Toast.makeText(getContext(), "Danh sách bài hát trống!", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        if (currentSong == null) {
-            int randomIndex = new Random().nextInt(songsList.size());
-            playSong(songsList.get(randomIndex));
-            if (songAdapter != null) songAdapter.setSelectedPosition(randomIndex);
-            return;
-        }
-
-        if (mediaPlayer != null) {
-            if (isPlaying) {
-                mediaPlayer.pause();
-                isPlaying = false;
-                btnPlay.setImageResource(R.drawable.ic_play);
-            } else {
-                mediaPlayer.start();
-                isPlaying = true;
-                btnPlay.setImageResource(R.drawable.ic_pause);
-            }
-        }
-    }
 
     // --------------------- LOAD DATA -----------------------
     private void loadSongsByArtist(String artistId) {
@@ -480,8 +435,8 @@ public class CategoryPlaylistFragment extends Fragment {
                             categoryPlaylistTittle.setVisibility(View.VISIBLE);
                             categoryPlaylistTittle.setText(playlist.getTitle());
                             categoryPlaylistDescription.setText(playlist.getDescription());
-                            imgHeaderBg.setVisibility(View.GONE);
                             tvNameArtist.setVisibility(View.GONE);
+                            Glide.with(requireContext()).load(R.drawable.img_default_playlist).into(imgHeaderBg);
 
                             if (currentUserId != null && currentUserId.equals(playlist.getUserId())) {
                                 btnAddLibrary.setVisibility(View.GONE); // playlist của mình
@@ -544,15 +499,47 @@ public class CategoryPlaylistFragment extends Fragment {
                         }
                     }
                     songAdapter.notifyDataSetChanged();
+                    if (isServiceBound) {
+                        musicPlayerService.setSongs(songsList);
+                    }
                 });
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
-        if (mediaPlayer != null) {
-            mediaPlayer.release();
-            mediaPlayer = null;
+    public void onSongChanged(Song song) {
+        updateUI();
+    }
+
+    @Override
+    public void onPlayerStateChanged(boolean isPlaying) {
+        updateUI();
+    }
+
+    @Override
+    public void onPlaylistChanged(List<Song> newPlaylist) {
+        songsList.clear();
+        songsList.addAll(newPlaylist);
+        songAdapter.notifyDataSetChanged();
+        updateUI();
+    }
+
+    private void updateUI() {
+        if (!isServiceBound || musicPlayerService == null) return;
+
+        Song currentSong = musicPlayerService.getCurrentSong();
+        if (currentSong != null) {
+            int position = songsList.indexOf(currentSong);
+            songAdapter.setSelectedPosition(position);
+
+            if (getContext() != null && imgSong != null && currentSong.getCoverUrl() != null) {
+                Glide.with(requireContext())
+                        .load(currentSong.getCoverUrl())
+                        .placeholder(R.drawable.img_default_song)
+                        .into(imgSong);
+            }
         }
+
+        btnPlay.setImageResource(musicPlayerService.isPlaying() ? R.drawable.ic_pause : R.drawable.ic_play);
+        btnShuffle.setImageResource(musicPlayerService.isShuffling() ? R.drawable.ic_shuffle_on : R.drawable.ic_shuffle_disabled);
     }
 }
