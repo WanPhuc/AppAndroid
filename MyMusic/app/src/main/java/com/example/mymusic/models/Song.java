@@ -1,6 +1,8 @@
 package com.example.mymusic.models;
 
-public class Song {
+import java.io.Serializable;
+
+public class Song implements Serializable {
     private String songID;
     private String title;
     private String artistID;
@@ -10,9 +12,10 @@ public class Song {
     private String year;
     private int duration;
     private String lyrics;
-
+    private Artist artist;
     public Song(){}
-    public Song(String songID, String title, String artistID, String genre, String coverUrl, String fileUrl, String year, int duration, String lyrics){
+
+    public Song(String songID, Artist artist, String title, String artistID, String genre, String coverUrl, String fileUrl, String year, int duration, String lyrics){
         this.songID = songID;
         this.title = title;
         this.artistID = artistID;
@@ -22,6 +25,7 @@ public class Song {
         this.year = year;
         this.duration = duration;
         this.lyrics = lyrics;
+        this.artist = artist;
     }
     public String getSongID() {return songID;}
     public void setSongID(String songID) {this.songID = songID;}
@@ -41,4 +45,7 @@ public class Song {
     public void setDuration(int duration) {this.duration = duration;}
     public String getLyrics() {return lyrics;}
     public void setLyrics(String lyrics) {this.lyrics = lyrics;}
+    public Artist getArtist() { return artist; }
+    public void setArtist(Artist artist) { this.artist = artist; }
+
 }

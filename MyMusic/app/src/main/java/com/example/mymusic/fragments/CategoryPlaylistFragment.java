@@ -25,6 +25,7 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.bumptech.glide.Glide;
 import com.example.mymusic.R;
 import com.example.mymusic.SongDownloadManager;
+import com.example.mymusic.adapters.MainAdapter;
 import com.example.mymusic.adapters.SongAdapter;
 import com.example.mymusic.models.Artist;
 import com.example.mymusic.models.Playlist;

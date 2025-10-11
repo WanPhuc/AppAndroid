@@ -11,10 +11,11 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 import com.example.mymusic.fragments.CategoryPlaylistFragment;
 import com.example.mymusic.fragments.HomeFragment;
 import com.example.mymusic.fragments.LibraryFragment;
+import com.example.mymusic.fragments.PlaySongFragment;
 import com.example.mymusic.fragments.SearchFragment;
 
 public class MainAdapter extends FragmentStateAdapter {
-    private Bundle categoryArgs; // để truyền bundle cho CategoryPlaylistFragment
+    private Bundle categoryArgs, playsongArgs; // để truyền bundle cho CategoryPlaylistFragment
 
     public MainAdapter(@NonNull FragmentActivity fragmentActivity) {
         super(fragmentActivity);
@@ -31,19 +32,27 @@ public class MainAdapter extends FragmentStateAdapter {
                 CategoryPlaylistFragment fragment = new CategoryPlaylistFragment();
                 if (categoryArgs != null) fragment.setArguments(categoryArgs);
                 return fragment;
+            case 4:
+                PlaySongFragment playsongFragment = new PlaySongFragment();
+                if (playsongArgs != null) playsongFragment.setArguments(playsongArgs);
+                return playsongFragment;
             default: return new HomeFragment();
         }
     }
 
     @Override
     public int getItemCount() {
-        return 4; // tăng lên 4
+        return 5; // tăng lên 4
     }
 
     // Hàm này để set bundle cho tab CategoryPlaylist
     public void setCategoryArgs(Bundle args) {
         this.categoryArgs = args;
         notifyItemChanged(3); // refresh tab 3 (CategoryPlaylistFragment)
+    }
+    public void setPlaySongArgs(Bundle args) {
+        this.playsongArgs = args;
+        notifyItemChanged(4); // refresh tab 3 (CategoryPlaylistFragment)
     }
 }
 

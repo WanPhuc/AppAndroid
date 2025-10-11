@@ -1,6 +1,7 @@
 package com.example.mymusic.adapters;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -12,7 +13,9 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.bumptech.glide.Glide;
 import com.example.mymusic.R;
@@ -112,7 +115,19 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
 
             if (listener != null) {
                 listener.onSongClick(songs.get(pos), pos); // truyền Song + position
+
+                Song clickedSong = songs.get(selectedPosition);
+
+                AppCompatActivity activity = (AppCompatActivity) v.getContext();
+                ViewPager2 viewPager = activity.findViewById(R.id.vp_fragmain);
+                MainAdapter adapter = (MainAdapter) viewPager.getAdapter();
+                Bundle args = new Bundle();
+                args.putSerializable("selected_song", clickedSong);
+                adapter.setPlaySongArgs(args);
+                viewPager.setCurrentItem(4, true);
             }
+
+
         });
 
         holder.btnMore.setOnClickListener(v -> {
