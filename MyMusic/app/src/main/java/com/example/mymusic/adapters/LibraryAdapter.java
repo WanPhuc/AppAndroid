@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
@@ -22,6 +23,7 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.bumptech.glide.Glide;
 import com.example.mymusic.R;
 import com.example.mymusic.SongDownloadManager;
+import com.example.mymusic.fragments.CategoryPlaylistFragment;
 import com.example.mymusic.models.LibraryItem;
 import com.example.mymusic.models.Playlist;
 import com.example.mymusic.models.User;
@@ -129,8 +131,9 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.LibraryV
         holder.itemView.setOnClickListener(v -> {
             AppCompatActivity activity = (AppCompatActivity) v.getContext();
             ViewPager2 viewPager = activity.findViewById(R.id.vp_fragmain);
+            CategoryPlaylistFragment fragment = new CategoryPlaylistFragment();
+            FrameLayout container = activity.findViewById(R.id.container_main);
             if (viewPager != null && viewPager.getAdapter() instanceof MainAdapter) {
-                MainAdapter adapter = (MainAdapter) viewPager.getAdapter();
                 Bundle args = new Bundle();
                 Playlist playlist = item.getPlaylist();
                 if (playlist != null && "favorites".equals(playlist.getType())) {
@@ -143,8 +146,14 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.LibraryV
                     args.putString("type", "artist");
                 }
                 args.putString("value", item.getId());
-                adapter.setCategoryArgs(args);
-                viewPager.setCurrentItem(3, true);
+                fragment.setArguments(args);
+
+                activity.getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.container_main,fragment)
+                                        .addToBackStack(null)
+                                                .commit();
+                viewPager.setVisibility(View.GONE);
+                container.setVisibility(View.VISIBLE);
             } else {
                 Log.e(TAG, "ViewPager or MainAdapter not found or incorrect type");
             }

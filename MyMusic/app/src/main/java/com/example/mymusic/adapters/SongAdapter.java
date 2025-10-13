@@ -116,15 +116,6 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
             if (listener != null) {
                 listener.onSongClick(songs.get(pos), pos); // truyền Song + position
 
-                Song clickedSong = songs.get(selectedPosition);
-
-                AppCompatActivity activity = (AppCompatActivity) v.getContext();
-                ViewPager2 viewPager = activity.findViewById(R.id.vp_fragmain);
-                MainAdapter adapter = (MainAdapter) viewPager.getAdapter();
-                Bundle args = new Bundle();
-                args.putSerializable("selected_song", clickedSong);
-                adapter.setPlaySongArgs(args);
-                viewPager.setCurrentItem(4, true);
             }
 
 

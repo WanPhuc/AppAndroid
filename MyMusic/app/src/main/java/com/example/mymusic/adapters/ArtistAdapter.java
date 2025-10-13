@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -48,17 +49,29 @@ public class ArtistAdapter extends RecyclerView.Adapter<ArtistAdapter.ArtistView
 
         holder.itemView.setOnClickListener(v -> {
             AppCompatActivity activity = (AppCompatActivity) v.getContext();
-            ViewPager2 viewPager = activity.findViewById(R.id.vp_fragmain);
-            MainAdapter adapter = (MainAdapter) viewPager.getAdapter();
-
-            // Truyền dữ liệu sang CategoryPlaylistFragment
+            CategoryPlaylistFragment fragment = new CategoryPlaylistFragment();
             Bundle args = new Bundle();
             args.putString("type", "artist");
             args.putString("value", artist.getArtistID());
-            adapter.setCategoryArgs(args);
+            fragment.setArguments(args);
 
-            // Chuyển ViewPager sang tab 3
-            viewPager.setCurrentItem(3, true);
+            activity.getSupportFragmentManager()
+                    .beginTransaction()
+                    .setCustomAnimations(
+                            R.anim.slide_in_up,  // enter
+                            R.anim.fade_out,     // exit
+                            R.anim.fade_in,      // popEnter
+                            R.anim.slide_out_down // popExit
+                    )
+                    .replace(R.id.container_main, fragment)
+                    .addToBackStack(null)
+                    .commit();
+
+            ViewPager2 viewPager = activity.findViewById(R.id.vp_fragmain);
+            viewPager.setVisibility(View.GONE);
+
+            FrameLayout container = activity.findViewById(R.id.container_main);
+            container.setVisibility(View.VISIBLE);
         });
 
 

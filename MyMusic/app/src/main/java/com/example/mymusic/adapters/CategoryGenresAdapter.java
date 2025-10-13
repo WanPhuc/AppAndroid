@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -17,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.mymusic.R;
+import com.example.mymusic.fragments.CategoryPlaylistFragment;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -44,13 +46,26 @@ public class CategoryGenresAdapter extends RecyclerView.Adapter<CategoryGenresAd
 
         holder.itemView.setOnClickListener(v->{
             AppCompatActivity activity=(AppCompatActivity) v.getContext();
-            ViewPager2 viewPager=activity.findViewById(R.id.vp_fragmain);
-            MainAdapter adapter=(MainAdapter) viewPager.getAdapter();
+            CategoryPlaylistFragment fragment=new CategoryPlaylistFragment();
             Bundle args=new Bundle();
             args.putString("type","genre");
             args.putString("value",category);
-            adapter.setCategoryArgs(args);
-            viewPager.setCurrentItem(3,true);
+            fragment.setArguments(args);
+            activity.getSupportFragmentManager()
+                    .beginTransaction()
+                    .setCustomAnimations(
+                            R.anim.slide_in_up,  // enter
+                            R.anim.fade_out,     // exit
+                            R.anim.fade_in,      // popEnter
+                            R.anim.slide_out_down // popExit
+                    )
+                    .replace(R.id.container_main,fragment)
+                    .addToBackStack(null)
+                    .commit();
+            ViewPager2 viewPager=activity.findViewById(R.id.vp_fragmain);
+            viewPager.setVisibility(View.GONE);
+            FrameLayout container=activity.findViewById(R.id.container_main);
+            container.setVisibility(View.VISIBLE);
         });
 
         int backgroundColor;

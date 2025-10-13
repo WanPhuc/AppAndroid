@@ -1,8 +1,11 @@
 package com.example.mymusic.models;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 public class Song implements Serializable {
+
+
     private String songID;
     private String title;
     private String artistID;
@@ -45,7 +48,23 @@ public class Song implements Serializable {
     public void setDuration(int duration) {this.duration = duration;}
     public String getLyrics() {return lyrics;}
     public void setLyrics(String lyrics) {this.lyrics = lyrics;}
+
     public Artist getArtist() { return artist; }
     public void setArtist(Artist artist) { this.artist = artist; }
+
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Song song = (Song) o;
+        return Objects.equals(songID, song.songID);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(songID);
+    }
 
 }

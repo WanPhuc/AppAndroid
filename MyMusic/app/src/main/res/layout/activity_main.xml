@@ -12,6 +12,14 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@id/fl_miniplay"/>
+    <!-- 🧠 Khung chứa fragment mở chồng lên, ví dụ CategoryPlaylist, PlaySong,... -->
+    <FrameLayout
+        android:id="@+id/container_main"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/fl_miniplay"
+        android:elevation="10dp"
+        android:visibility="gone" />
 
     <!-- Mini player -->
     <FrameLayout

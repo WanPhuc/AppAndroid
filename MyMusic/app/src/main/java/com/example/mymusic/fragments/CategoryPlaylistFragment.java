@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -17,6 +18,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -69,6 +71,9 @@ public class CategoryPlaylistFragment extends Fragment implements MusicPlayerSer
             MusicPlayerService.MusicPlayerBinder binder = (MusicPlayerService.MusicPlayerBinder) service;
             musicPlayerService = binder.getService();
             musicPlayerService.setPlayerListener(CategoryPlaylistFragment.this);
+            if (!artistList.isEmpty()) {
+                musicPlayerService.setArtists(artistList);
+            }
             isServiceBound = true;
             updateUI();
         }
@@ -115,6 +120,9 @@ public class CategoryPlaylistFragment extends Fragment implements MusicPlayerSer
             artistList.clear();
             artistList.addAll(artists);
             songAdapter.updateArtists(artistList);
+            if (isServiceBound) {
+                musicPlayerService.setArtists(artistList);
+            }
 
             if (getArguments() != null) {
                 String type = getArguments().getString("type");
@@ -143,25 +151,58 @@ public class CategoryPlaylistFragment extends Fragment implements MusicPlayerSer
         });
 
         songAdapter.setOnSongClickListener((song, position) -> {
-            if (isServiceBound) {
-                musicPlayerService.setSongs(songsList);
-                musicPlayerService.playSong(song);
-                songAdapter.setSelectedPosition(position);
+            if (!isServiceBound) return;
+
+            List<Song> currentServicePlaylist = musicPlayerService.getOriginalSongs();
+            boolean isDifferentPlaylist = currentServicePlaylist == null
+                    || currentServicePlaylist.isEmpty()
+                    || currentServicePlaylist.size() != songsList.size()
+                    || !currentServicePlaylist.get(0).getSongID().equals(songsList.get(0).getSongID());
+
+            if (isDifferentPlaylist) {
+                // 🛑 Stop playlist cũ
+                musicPlayerService.stop();
+                // 🔁 Set playlist mới
+                musicPlayerService.setSongs(new ArrayList<>(songsList));
             }
+
+            // ▶️ Phát bài được click
+            musicPlayerService.playSong(song);
+            songAdapter.setSelectedPosition(position);
+            updateUI();
         });
+
+
 
         btnPlay.setOnClickListener(v -> {
-            if (isServiceBound) {
-                 if (musicPlayerService.getCurrentSong() == null && !songsList.isEmpty()) {
-                    musicPlayerService.setSongs(songsList);
+            if (isServiceBound && !songsList.isEmpty()) {
+                List<Song> currentServicePlaylist = musicPlayerService.getOriginalSongs();
+                boolean isDifferentPlaylist = currentServicePlaylist == null
+                        || currentServicePlaylist.isEmpty()
+                        || currentServicePlaylist.size() != songsList.size()
+                        || !currentServicePlaylist.get(0).getSongID().equals(songsList.get(0).getSongID());
+
+                if (isDifferentPlaylist) {
+                    // 🛑 Stop playlist cũ
+                    musicPlayerService.stop();
+                    // 🔄 Set playlist mới
+                    musicPlayerService.setSongs(new ArrayList<>(songsList));
+                    // ▶️ Phát bài đầu tiên trong playlist mới
+                    musicPlayerService.playSong(songsList.get(0));
+                    songAdapter.setSelectedPosition(0);
+                } else {
+                    // 🔁 Nếu đang ở playlist cũ thì chỉ toggle play/pause
+                    musicPlayerService.playPause();
                 }
-                musicPlayerService.playPause();
+
+                updateUI();
             }
         });
 
+
         btnShuffle.setOnClickListener(v -> {
-            if (isServiceBound) {
-                 if (musicPlayerService.getCurrentSong() == null && !songsList.isEmpty()) {
+            if (isServiceBound && !songsList.isEmpty()) {
+                if (musicPlayerService.getCurrentSong() == null) {
                     musicPlayerService.setSongs(songsList);
                 }
                 musicPlayerService.toggleShuffle();
@@ -170,8 +211,7 @@ public class CategoryPlaylistFragment extends Fragment implements MusicPlayerSer
         });
 
         btnBack.setOnClickListener(v -> {
-            ViewPager2 viewPager = requireActivity().findViewById(R.id.vp_fragmain);
-            viewPager.setCurrentItem(2, true); // tab LibraryFragment
+            requireActivity().getSupportFragmentManager().popBackStack();
         });
 
         btnAddLibrary.setOnClickListener(v -> {
@@ -201,8 +241,6 @@ public class CategoryPlaylistFragment extends Fragment implements MusicPlayerSer
     public void onStop() {
         super.onStop();
         if (isServiceBound) {
-            getActivity().unbindService(serviceConnection);
-            isServiceBound = false;
         }
     }
 
@@ -395,6 +433,9 @@ public class CategoryPlaylistFragment extends Fragment implements MusicPlayerSer
                             songsList.add(song);
                         }
                     }
+                    if (isServiceBound && musicPlayerService != null) {
+                        musicPlayerService.setSongs(songsList);
+                    }
                     songAdapter.notifyDataSetChanged();
                 });
     }
@@ -419,6 +460,9 @@ public class CategoryPlaylistFragment extends Fragment implements MusicPlayerSer
                             song.setSongID(doc.getId());
                             songsList.add(song);
                         }
+                    }
+                    if (isServiceBound && musicPlayerService != null) {
+                        musicPlayerService.setSongs(songsList);
                     }
                     songAdapter.notifyDataSetChanged();
                 });
@@ -485,8 +529,14 @@ public class CategoryPlaylistFragment extends Fragment implements MusicPlayerSer
         if (songIds == null || songIds.isEmpty()) {
             songsList.clear();
             songAdapter.notifyDataSetChanged();
+
+            // 🧹 Clear playlist trong service nếu rỗng
+            if (isServiceBound && musicPlayerService != null) {
+                musicPlayerService.setSongs(new ArrayList<>());
+            }
             return;
         }
+
         db.collection("Songs")
                 .whereIn(FieldPath.documentId(), songIds)
                 .get()
@@ -500,11 +550,19 @@ public class CategoryPlaylistFragment extends Fragment implements MusicPlayerSer
                         }
                     }
                     songAdapter.notifyDataSetChanged();
-                    if (isServiceBound) {
-                        musicPlayerService.setSongs(songsList);
+                    // 🔥 Chỉ set playlist 1 lần duy nhất khi load thành công
+                    if (isServiceBound && musicPlayerService != null) {
+                        // Kiểm tra nếu playlist mới khác playlist cũ thì mới set lại
+                        if (musicPlayerService.getCurrentPlaylistSize() != songsList.size()) {
+                            musicPlayerService.setSongs(new ArrayList<>(songsList));
+                        }
                     }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("fetchSongsFromIds", "Lỗi load bài hát từ playlist: ", e);
                 });
     }
+
 
     @Override
     public void onSongChanged(Song song) {
@@ -518,10 +576,15 @@ public class CategoryPlaylistFragment extends Fragment implements MusicPlayerSer
 
     @Override
     public void onPlaylistChanged(List<Song> newPlaylist) {
-        songsList.clear();
-        songsList.addAll(newPlaylist);
-        songAdapter.notifyDataSetChanged();
-        updateUI();
+        if (musicPlayerService != null) {
+            List<Song> activeList = musicPlayerService.getTransientSongs() != null
+                    ? musicPlayerService.getTransientSongs()
+                    : newPlaylist; // ưu tiên transient nếu có
+            songsList.clear();
+            songsList.addAll(activeList);
+            songAdapter.notifyDataSetChanged();
+            updateUI();
+        }
     }
 
     private void updateUI() {
@@ -536,6 +599,13 @@ public class CategoryPlaylistFragment extends Fragment implements MusicPlayerSer
                 Glide.with(requireContext())
                         .load(currentSong.getCoverUrl())
                         .placeholder(R.drawable.img_default_song)
+                        .into(imgSong);
+            }
+        } else {
+            songAdapter.setSelectedPosition(-1);
+            if (getContext() != null && imgSong != null) {
+                Glide.with(requireContext())
+                        .load(R.drawable.img_default_song)
                         .into(imgSong);
             }
         }

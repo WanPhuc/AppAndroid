@@ -10,20 +10,28 @@
         android:layout_height="250dp"
         android:layout_weight="1">
 
+
+
         <!-- Ảnh nền full -->
         <ImageView
             android:id="@+id/img_header_bg"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scaleType="centerCrop"
+            android:scaleType="fitXY"
             android:src="@drawable/artist"
-            android:adjustViewBounds="true"/>
+            android:adjustViewBounds="true"
+            android:clickable="false"
+            android:focusable="false"
+            />
 
         <!-- Lớp phủ mờ -->
         <View
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="#80000000"/>
+            android:background="#80000000"
+            android:clickable="false"
+            android:focusable="false"
+            />
 
         <!-- Nút back trên góc -->
         <ImageButton
@@ -35,6 +43,8 @@
             android:contentDescription="Back"
             android:layout_margin="16dp"
             android:layout_gravity="start|top"/>
+
+
 
         <!-- Text ở dưới cùng -->
         <LinearLayout

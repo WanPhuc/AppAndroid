@@ -7,14 +7,17 @@ import android.graphics.drawable.StateListDrawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.ColorUtils;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.mymusic.R;
+import com.example.mymusic.fragments.CategoryPlaylistFragment;
 import com.example.mymusic.models.Playlist;
 
 import java.util.ArrayList;
@@ -41,14 +44,27 @@ public class CategoryPlaylistAdapter extends RecyclerView.Adapter<CategoryPlayli
         holder.itemView.setOnClickListener(v -> {
             AppCompatActivity activity = (AppCompatActivity) v.getContext();
             ViewPager2 viewPager = activity.findViewById(R.id.vp_fragmain);
-            MainAdapter adapter = (MainAdapter) viewPager.getAdapter();
+            CategoryPlaylistFragment fragment =new CategoryPlaylistFragment();
 
             Bundle args = new Bundle();
             args.putString("type", "playlist");
             args.putString("value", playlist.getPlaylistID()); // truyền ID để lấy song list
+            fragment.setArguments(args);
 
-            adapter.setCategoryArgs(args);
-            viewPager.setCurrentItem(3, true);
+            activity.getSupportFragmentManager().beginTransaction()
+                    .setCustomAnimations(
+                            R.anim.slide_in_up,  // enter
+                            R.anim.fade_out,     // exit
+                            R.anim.fade_in,      // popEnter
+                            R.anim.slide_out_down // popExit
+                    )
+                    .replace(R.id.container_main,fragment)
+                    .addToBackStack(null)
+                    .commit();
+
+            viewPager.setVisibility(View.GONE);
+            FrameLayout container =activity.findViewById(R.id.container_main);
+            container.setVisibility(View.VISIBLE);
         });
 
 
