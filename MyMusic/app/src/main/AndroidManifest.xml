@@ -41,19 +41,7 @@
             android:exported="false"
             android:foregroundServiceType="mediaPlayback"
             tools:ignore="ForegroundServicePermission"/>
-        <receiver
-            android:name=".services.NotificationReceiver"
-            android:enabled="true"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MEDIA_BUTTON" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="com.example.mymusic.ACTION_PLAY_PAUSE" />
-                <action android:name="com.example.mymusic.ACTION_NEXT" />
-                <action android:name="com.example.mymusic.ACTION_PREV" />
-            </intent-filter>
-        </receiver>
+
 
 
     </application>

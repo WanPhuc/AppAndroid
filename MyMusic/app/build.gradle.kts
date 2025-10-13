@@ -60,4 +60,6 @@ dependencies {
     annotationProcessor ("com.github.bumptech.glide:compiler:4.16.0")
 
     implementation("androidx.media:media:1.7.0")
+
+    implementation("androidx.core:core:1.12.0")
 }
