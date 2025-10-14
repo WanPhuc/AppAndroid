@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.media.AudioAttributes;
 import android.media.AudioFocusRequest;
 import android.media.AudioManager;
@@ -19,13 +20,21 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.support.v4.media.MediaMetadataCompat;
+import android.support.v4.media.session.MediaSessionCompat;
+import android.support.v4.media.session.PlaybackStateCompat;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.media.app.NotificationCompat.MediaStyle;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.CustomTarget;
+import com.bumptech.glide.request.transition.Transition;
 import com.example.mymusic.R;
 import com.example.mymusic.models.Artist;
 import com.example.mymusic.models.Song;
@@ -34,12 +43,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-
-import android.support.v4.media.MediaMetadataCompat;
-import android.support.v4.media.session.MediaSessionCompat;
-import android.support.v4.media.session.PlaybackStateCompat;
-import androidx.core.app.NotificationCompat;
-import androidx.media.app.NotificationCompat.MediaStyle;
 
 
 
@@ -112,7 +115,7 @@ public class MusicPlayerService extends android.app.Service implements MediaPlay
             NotificationChannel channel = new NotificationChannel(
                     CHANNEL_ID,
                     "Music Playback",
-                    NotificationManager.IMPORTANCE_LOW
+                    NotificationManager.IMPORTANCE_DEFAULT
             );
             NotificationManager manager = getSystemService(NotificationManager.class);
             if (manager != null) manager.createNotificationChannel(channel);
@@ -157,9 +160,8 @@ public class MusicPlayerService extends android.app.Service implements MediaPlay
         updateMediaSessionState(true);  // Update state playing sau khi start
         // Start foreground khi bắt đầu play (cho Android 8+)
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
-            startForeground(NOTIFICATION_ID, createNotification(getCurrentSong(), true));
+            updateNotification(); // Initial notification update
         }
-        updateNotification();  // Update thêm nếu cần
         progressHandler.post(updateProgressRunnable);
     }
 
@@ -451,7 +453,7 @@ public class MusicPlayerService extends android.app.Service implements MediaPlay
                 .build());
     }
 
-    private Notification createNotification(Song song, boolean isPlaying) {
+    private void createNotification(Song song, boolean isPlaying, @Nullable Bitmap albumArt) {
         if (mediaSession == null) {
             mediaSession = new MediaSessionCompat(this, "MyMusicSession");
             mediaSession.setCallback(new MediaSessionCallback());
@@ -459,30 +461,36 @@ public class MusicPlayerService extends android.app.Service implements MediaPlay
             mediaSession.setActive(true);
         }
 
-        // Load album art
-        Bitmap bmp;
-        try {
-            bmp = Glide.with(this).asBitmap().load(song.getCoverUrl()).submit().get();
-        } catch (Exception e) {
-            bmp = BitmapFactory.decodeResource(getResources(), R.drawable.img_default_song);
-        }
+        Bitmap finalAlbumArt = albumArt != null ? albumArt : BitmapFactory.decodeResource(getResources(), R.drawable.img_default_song);
 
         // Update metadata cho lockscreen/media session
         mediaSession.setMetadata(new MediaMetadataCompat.Builder()
                 .putString(MediaMetadataCompat.METADATA_KEY_TITLE, song.getTitle())
                 .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, getArtistName(song.getArtistID()))
-                .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, bmp)
+                .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, finalAlbumArt)
                 .build());
 
         // Update playback state
         updateMediaSessionState(isPlaying);
 
-        // Tạo notification với MediaStyle (tự handle 3 nút: prev, play/pause, next)
-        return new NotificationCompat.Builder(this, CHANNEL_ID)
+        int flags = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? PendingIntent.FLAG_IMMUTABLE : 0;
+
+        PendingIntent prevPendingIntent = PendingIntent.getService(this, 0, new Intent(this, MusicPlayerService.class).setAction(ACTION_PREV), flags);
+        PendingIntent playPausePendingIntent = PendingIntent.getService(this, 0, new Intent(this, MusicPlayerService.class).setAction(ACTION_PLAY_PAUSE), flags);
+        PendingIntent nextPendingIntent = PendingIntent.getService(this, 0, new Intent(this, MusicPlayerService.class).setAction(ACTION_NEXT), flags);
+
+        int playPauseIcon = isPlaying ? R.drawable.ic_pause : R.drawable.ic_play;
+        String playPauseTitle = isPlaying ? "Pause" : "Play";
+
+        // Tạo notification với MediaStyle
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_apple_music_icon)
                 .setContentTitle(song.getTitle())
                 .setContentText(getArtistName(song.getArtistID()))
-                .setLargeIcon(bmp)
+                .setLargeIcon(finalAlbumArt)
+                .addAction(R.drawable.ic_previous, "Previous", prevPendingIntent)
+                .addAction(playPauseIcon, playPauseTitle, playPausePendingIntent)
+                .addAction(R.drawable.ic_next, "Next", nextPendingIntent)
                 .setStyle(new MediaStyle()
                         .setMediaSession(mediaSession.getSessionToken())
                         .setShowActionsInCompactView(0, 1, 2))
@@ -490,9 +498,18 @@ public class MusicPlayerService extends android.app.Service implements MediaPlay
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setCategory(Notification.CATEGORY_TRANSPORT)
                 .setOnlyAlertOnce(true)
-                .setOngoing(isPlaying)
-                .build();
+                .setOngoing(isPlaying);
 
+        Notification notification = notificationBuilder.build();
+
+        if (isPlaying) {
+            startForeground(NOTIFICATION_ID, notification);
+        } else {
+            stopForeground(false);
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+                NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, notification);
+            }
+        }
     }
 
     // ✅ Tiếp từ dòng 493: Hoàn thiện updateNotification()
@@ -501,19 +518,26 @@ public class MusicPlayerService extends android.app.Service implements MediaPlay
         if (current == null) return;
 
         boolean isPlaying = isActuallyPlaying();
-        Notification notification = createNotification(current, isPlaying);
 
-        if (isPlaying) {
-            // Khi playing, dùng foreground service
-            startForeground(NOTIFICATION_ID, notification);
-        } else {
-            // Khi paused, show normal notification (không foreground)
-            stopForeground(false);
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
-                    == PackageManager.PERMISSION_GRANTED) {
-                NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, notification);
-            }
-        }
+        Glide.with(this)
+                .asBitmap()
+                .load(current.getCoverUrl())
+                .into(new CustomTarget<Bitmap>() {
+                    @Override
+                    public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+                        createNotification(current, isPlaying, resource);
+                    }
+
+                    @Override
+                    public void onLoadFailed(@Nullable Drawable errorDrawable) {
+                        createNotification(current, isPlaying, null);
+                    }
+
+                    @Override
+                    public void onLoadCleared(@Nullable Drawable placeholder) {
+
+                    }
+                });
     }
 
     @Override
@@ -528,7 +552,7 @@ public class MusicPlayerService extends android.app.Service implements MediaPlay
                     playNext();
                     break;
                 case ACTION_PREV:
-                    playPrevious();
+                    //playPrevious();
                     break;
             }
         } else {

@@ -151,26 +151,31 @@ public class CategoryPlaylistFragment extends Fragment implements MusicPlayerSer
         });
 
         songAdapter.setOnSongClickListener((song, position) -> {
-            if (!isServiceBound) return;
+    if (!isServiceBound) return;
 
-            List<Song> currentServicePlaylist = musicPlayerService.getOriginalSongs();
-            boolean isDifferentPlaylist = currentServicePlaylist == null
-                    || currentServicePlaylist.isEmpty()
-                    || currentServicePlaylist.size() != songsList.size()
-                    || !currentServicePlaylist.get(0).getSongID().equals(songsList.get(0).getSongID());
+    List<Song> currentServicePlaylist = musicPlayerService.getOriginalSongs();
+    boolean isDifferentPlaylist = currentServicePlaylist == null
+            || currentServicePlaylist.isEmpty()
+            || currentServicePlaylist.size() != songsList.size()
+            || !currentServicePlaylist.get(0).getSongID().equals(songsList.get(0).getSongID());
 
-            if (isDifferentPlaylist) {
-                // 🛑 Stop playlist cũ
-                musicPlayerService.stop();
-                // 🔁 Set playlist mới
-                musicPlayerService.setSongs(new ArrayList<>(songsList));
-            }
+    if (isDifferentPlaylist) {
+        // 🛑 Stop playlist cũ
+        musicPlayerService.stop();
+        // 🔁 Set playlist mới
+        musicPlayerService.setSongs(new ArrayList<>(songsList));
+    }
 
-            // ▶️ Phát bài được click
-            musicPlayerService.playSong(song);
-            songAdapter.setSelectedPosition(position);
-            updateUI();
-        });
+    // ▶️ Phát bài được click
+    musicPlayerService.playSong(song);
+    songAdapter.setSelectedPosition(position);
+    updateUI();
+
+    // Preload the next song's image
+    if (position + 1 < songsList.size()) {
+        preloadImage(songsList.get(position + 1).getCoverUrl());
+    }
+});
 
 
 
@@ -229,6 +234,16 @@ public class CategoryPlaylistFragment extends Fragment implements MusicPlayerSer
 
         return view;
     }
+
+    private void preloadImage(String url) {
+        if (getContext() != null) {
+            Glide.with(getContext())
+                .load(url)
+                .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.ALL)
+                .preload();
+        }
+    }
+
 
     @Override
     public void onStart() {

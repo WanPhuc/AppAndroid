@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.mymusic.R;
 import com.example.mymusic.SongDownloadManager;
 import com.example.mymusic.models.Artist;
@@ -95,6 +96,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
 
         Glide.with(holder.itemView.getContext())
                 .load(song.getCoverUrl())
+                .diskCacheStrategy(DiskCacheStrategy.ALL) // Cache both original & resized image
                 .placeholder(R.drawable.img_default_song)
                 .into(holder.imgSong);
         // 🎨 Highlight nếu đang chọn

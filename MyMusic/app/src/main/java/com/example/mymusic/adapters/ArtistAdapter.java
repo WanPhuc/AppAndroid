@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.mymusic.R;
 import com.example.mymusic.fragments.CategoryPlaylistFragment;
 import com.example.mymusic.models.Artist;
@@ -44,6 +45,7 @@ public class ArtistAdapter extends RecyclerView.Adapter<ArtistAdapter.ArtistView
 
         Glide.with(holder.itemView.getContext())
                 .load(artist.getAvatar())
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .placeholder(R.drawable.artist)
                 .into(holder.ivAvatar);
 
