@@ -22,6 +22,8 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.mymusic.R;
 import com.example.mymusic.adapters.MainAdapter;
+import com.example.mymusic.fragments.MiniPlayerFragment;
+import com.example.mymusic.models.Song;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreSettings;
@@ -30,6 +32,8 @@ public class MainActivity extends AppCompatActivity {
     private ViewPager2 viewPager2;
     private BottomNavigationView bottomNavigationView;
     private FrameLayout containerMain;
+    private FrameLayout miniPlayerContainer;
+    private MiniPlayerFragment miniPlayerFragment;
 
     private final ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(
             new ActivityResultContracts.RequestPermission(), isGranted -> {
@@ -65,6 +69,15 @@ public class MainActivity extends AppCompatActivity {
         setupNavigation();
         setupFragmentListener();
 
+        miniPlayerContainer = findViewById(R.id.fl_miniplay);
+        miniPlayerFragment = new MiniPlayerFragment();
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fl_miniplay, miniPlayerFragment)
+                .commit();
+        miniPlayerContainer.setVisibility(View.GONE);
+
+
     }
     private void setupNavigation() {
         bottomNavigationView.setOnItemSelectedListener(item -> {
@@ -98,6 +111,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
+    public void showMiniPlayer(Song song) {
+        miniPlayerContainer.setVisibility(View.VISIBLE);
+        miniPlayerFragment.bindSong(song);
+    }
 
 }

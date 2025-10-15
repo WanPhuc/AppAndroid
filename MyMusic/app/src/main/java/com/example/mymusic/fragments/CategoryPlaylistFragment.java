@@ -27,6 +27,7 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.bumptech.glide.Glide;
 import com.example.mymusic.R;
 import com.example.mymusic.SongDownloadManager;
+import com.example.mymusic.activities.MainActivity;
 import com.example.mymusic.adapters.MainAdapter;
 import com.example.mymusic.adapters.SongAdapter;
 import com.example.mymusic.models.Artist;
@@ -70,7 +71,8 @@ public class CategoryPlaylistFragment extends Fragment implements MusicPlayerSer
         public void onServiceConnected(ComponentName name, IBinder service) {
             MusicPlayerService.MusicPlayerBinder binder = (MusicPlayerService.MusicPlayerBinder) service;
             musicPlayerService = binder.getService();
-            musicPlayerService.setPlayerListener(CategoryPlaylistFragment.this);
+            musicPlayerService.addPlayerListener(CategoryPlaylistFragment.this);
+
             if (!artistList.isEmpty()) {
                 musicPlayerService.setArtists(artistList);
             }
@@ -151,31 +153,37 @@ public class CategoryPlaylistFragment extends Fragment implements MusicPlayerSer
         });
 
         songAdapter.setOnSongClickListener((song, position) -> {
-    if (!isServiceBound) return;
+            if (!isServiceBound) return;
 
-    List<Song> currentServicePlaylist = musicPlayerService.getOriginalSongs();
-    boolean isDifferentPlaylist = currentServicePlaylist == null
-            || currentServicePlaylist.isEmpty()
-            || currentServicePlaylist.size() != songsList.size()
-            || !currentServicePlaylist.get(0).getSongID().equals(songsList.get(0).getSongID());
+            List<Song> currentServicePlaylist = musicPlayerService.getOriginalSongs();
+            boolean isDifferentPlaylist = currentServicePlaylist == null
+                    || currentServicePlaylist.isEmpty()
+                    || currentServicePlaylist.size() != songsList.size()
+                    || !currentServicePlaylist.get(0).getSongID().equals(songsList.get(0).getSongID());
 
-    if (isDifferentPlaylist) {
-        // 🛑 Stop playlist cũ
-        musicPlayerService.stop();
-        // 🔁 Set playlist mới
-        musicPlayerService.setSongs(new ArrayList<>(songsList));
-    }
+            if (isDifferentPlaylist) {
+                // 🛑 Stop playlist cũ
+                musicPlayerService.stop();
+                // 🔁 Set playlist mới
+                musicPlayerService.setSongs(new ArrayList<>(songsList));
+            }
 
-    // ▶️ Phát bài được click
-    musicPlayerService.playSong(song);
-    songAdapter.setSelectedPosition(position);
-    updateUI();
+            // ▶️ Phát bài được click
+            musicPlayerService.playSong(song);
+            songAdapter.setSelectedPosition(position);
 
-    // Preload the next song's image
-    if (position + 1 < songsList.size()) {
-        preloadImage(songsList.get(position + 1).getCoverUrl());
-    }
-});
+            //hiện mini playẻr
+            if (getActivity() instanceof MainActivity) {
+                ((MainActivity) getActivity()).showMiniPlayer(song);
+            }
+
+            updateUI();
+            // Preload the next song's image
+            if (position + 1 < songsList.size()) {
+                preloadImage(songsList.get(position + 1).getCoverUrl());
+            }
+        }
+    );
 
 
 

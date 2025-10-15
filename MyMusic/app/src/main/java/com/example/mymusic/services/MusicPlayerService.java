@@ -60,8 +60,8 @@ public class MusicPlayerService extends android.app.Service implements MediaPlay
 
     private static final int NOTIFICATION_ID = 1;
     private static final String CHANNEL_ID = "music_channel";
-    private PlayerListener playerListener;
-
+    //private PlayerListener playerListener;
+    private final List<PlayerListener> playerListeners = new ArrayList<>();
     private final Handler progressHandler = new Handler(Looper.getMainLooper());
     private Runnable updateProgressRunnable;
     private AudioManager audioManager;
@@ -136,6 +136,29 @@ public class MusicPlayerService extends android.app.Service implements MediaPlay
     public IBinder onBind(Intent intent) {
         return binder;
     }
+    // Gỡ listener
+    public void removePlayerListener(PlayerListener listener) {
+        playerListeners.remove(listener);
+    }
+
+    // 🔔 Gửi sự kiện đến tất cả listener
+    private void notifySongChanged(Song song) {
+        for (PlayerListener listener : new ArrayList<>(playerListeners)) {
+            if (listener != null) listener.onSongChanged(song);
+        }
+    }
+
+    private void notifyPlayerStateChanged(boolean isPlaying) {
+        for (PlayerListener listener : new ArrayList<>(playerListeners)) {
+            if (listener != null) listener.onPlayerStateChanged(isPlaying);
+        }
+    }
+
+    private void notifyPlaylistChanged(List<Song> playlist) {
+        for (PlayerListener listener : new ArrayList<>(playerListeners)) {
+            if (listener != null) listener.onPlaylistChanged(playlist);
+        }
+    }
 
     @Override
     public void onCompletion(MediaPlayer mp) {
@@ -153,15 +176,10 @@ public class MusicPlayerService extends android.app.Service implements MediaPlay
     @Override
     public void onPrepared(MediaPlayer mp) {
         mp.start();
-        if (playerListener != null) {
-            playerListener.onSongChanged(getCurrentSong());
-            playerListener.onPlayerStateChanged(true);
-        }
-        updateMediaSessionState(true);  // Update state playing sau khi start
-        // Start foreground khi bắt đầu play (cho Android 8+)
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
-            updateNotification(); // Initial notification update
-        }
+        notifySongChanged(getCurrentSong());
+        notifyPlayerStateChanged(true);
+        updateMediaSessionState(true);
+        updateNotification();
         progressHandler.post(updateProgressRunnable);
     }
 
@@ -194,17 +212,13 @@ public class MusicPlayerService extends android.app.Service implements MediaPlay
 
         if (isActuallyPlaying() && originalSongs != null && originalSongs.equals(newSongs)) {
             transientSongs = null;
-            if (playerListener != null) {
-                playerListener.onPlaylistChanged(playingSongs);
-            }
+            notifyPlaylistChanged(playingSongs);
             return;
         }
 
         if (isActuallyPlaying()) {
             this.transientSongs = newSongs;
-            if (playerListener != null) {
-                playerListener.onPlaylistChanged(transientSongs);
-            }
+            notifyPlaylistChanged(playingSongs);
         } else {
             this.originalSongs = newSongs;
             this.playingSongs = new ArrayList<>(newSongs);
@@ -213,9 +227,7 @@ public class MusicPlayerService extends android.app.Service implements MediaPlay
             songHistory.clear();
             isShuffling = false;
             repeatMode = 0;
-            if (playerListener != null) {
-                playerListener.onPlaylistChanged(playingSongs);
-            }
+            notifyPlaylistChanged(playingSongs);
         }
     }
 
@@ -232,9 +244,7 @@ public class MusicPlayerService extends android.app.Service implements MediaPlay
             songHistory.clear();
             isShuffling = false;
             repeatMode = 0;
-            if (playerListener != null) {
-                playerListener.onPlaylistChanged(playingSongs);
-            }
+            notifyPlaylistChanged(playingSongs);
             songIndex = this.playingSongs.indexOf(song);
         } else if (playingSongs != null) {
             songIndex = playingSongs.indexOf(song);
@@ -288,22 +298,10 @@ public class MusicPlayerService extends android.app.Service implements MediaPlay
     public void playPause() {
         if (mediaPlayer.isPlaying()) {
             mediaPlayer.pause();
-            progressHandler.removeCallbacks(updateProgressRunnable);
-            if (playerListener != null) playerListener.onPlayerStateChanged(false);
-            updateMediaSessionState(false);  // Update state paused
+            notifyPlayerStateChanged(false);
         } else {
-            if (currentSongIndex != -1) {
-                if (requestAudioFocus()) {
-                    mediaPlayer.start();
-                    progressHandler.post(updateProgressRunnable);
-                    if (playerListener != null) playerListener.onPlayerStateChanged(true);
-                    updateMediaSessionState(true);  // Update state playing
-                }
-            } else if (playingSongs != null && !playingSongs.isEmpty()) {
-                currentSongIndex = isShuffling ? new Random().nextInt(playingSongs.size()) : 0;
-                _playSong(playingSongs.get(currentSongIndex));
-                return;
-            }
+            mediaPlayer.start();
+            notifyPlayerStateChanged(true);
         }
         updateNotification();
     }
@@ -317,9 +315,7 @@ public class MusicPlayerService extends android.app.Service implements MediaPlay
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            if (playerListener != null) {
-                playerListener.onPlayerStateChanged(false);
-            }
+            notifyPlayerStateChanged(false);
             updateMediaSessionState(false);  // Update state stopped/paused
             updateNotification();
         }
@@ -377,7 +373,8 @@ public class MusicPlayerService extends android.app.Service implements MediaPlay
 
     public void toggleShuffle() {
         isShuffling = !isShuffling;
-        if (playerListener != null) playerListener.onPlaylistChanged(playingSongs);
+        notifyPlaylistChanged(playingSongs);
+
     }
 
     public boolean isActuallyPlaying() {
@@ -416,8 +413,10 @@ public class MusicPlayerService extends android.app.Service implements MediaPlay
         return null;
     }
 
-    public void setPlayerListener(PlayerListener listener) {
-        this.playerListener = listener;
+    public void addPlayerListener(PlayerListener listener) {
+        if (listener != null && !playerListeners.contains(listener)) {
+            playerListeners.add(listener);
+        }
     }
 
     public int getCurrentPlaylistSize() {
