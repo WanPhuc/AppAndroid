@@ -22,11 +22,12 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.bumptech.glide.Glide;
 import com.example.mymusic.R;
+import com.example.mymusic.activities.MainActivity;
 import com.example.mymusic.adapters.MainAdapter;
 import com.example.mymusic.models.Song;
 import com.example.mymusic.services.MusicPlayerService;
 import com.google.firebase.firestore.FirebaseFirestore;
-
+import com.example.mymusic.fragments.PlaySongFragment;
 import java.util.List;
 
 public class MiniPlayerFragment extends Fragment implements MusicPlayerService.PlayerListener {
@@ -85,22 +86,14 @@ public class MiniPlayerFragment extends Fragment implements MusicPlayerService.P
             }
         });
         view.setOnClickListener(v -> {
-
-
-//            //truyền dữ liệu qua cho playsongfragment
-//            AppCompatActivity activity = (AppCompatActivity) view.getContext();
-//            ViewPager2 viewPager = activity.findViewById(R.id.vp_fragmain);
-//            MainAdapter adapter = (MainAdapter) viewPager.getAdapter();
-//            Bundle args = new Bundle();
-//            args.putSerializable("selected_song", playsong);
-//            adapter.setPlaySongArgs(args);
-//            viewPager.setCurrentItem(4, true);
-//
-//            //ẩn miniplayer
-//            View miniContainer = requireActivity().findViewById(R.id.fl_miniplay);
-//            if (miniContainer != null) {
-//                miniContainer.setVisibility(View.GONE);
-//            }
+            if (isServiceBound && musicPlayerService != null) {
+                Song currentSong = musicPlayerService.getCurrentSong();
+                if (currentSong != null) {
+                    if (getActivity() instanceof MainActivity) {
+                        ((MainActivity) getActivity()).openFullPlayer(currentSong);
+                    }
+                }
+            }
         });
 
 
@@ -144,10 +137,12 @@ public class MiniPlayerFragment extends Fragment implements MusicPlayerService.P
                 .into(imgCover);
 
     }
+
     public void updateUIMinifragmentUI() {
         if (musicPlayerService == null || !isServiceBound) return;
         btnPlayPause.setImageResource(musicPlayerService.isPlaying() ? R.drawable.ic_pause : R.drawable.ic_play);
     }
+
 
     @Override
     public void onSongChanged(Song song) {

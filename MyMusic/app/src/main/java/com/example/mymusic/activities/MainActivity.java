@@ -23,6 +23,7 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.example.mymusic.R;
 import com.example.mymusic.adapters.MainAdapter;
 import com.example.mymusic.fragments.MiniPlayerFragment;
+import com.example.mymusic.fragments.PlaySongFragment;
 import com.example.mymusic.models.Song;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -31,7 +32,7 @@ import com.google.firebase.firestore.FirebaseFirestoreSettings;
 public class MainActivity extends AppCompatActivity {
     private ViewPager2 viewPager2;
     private BottomNavigationView bottomNavigationView;
-    private FrameLayout containerMain;
+    private FrameLayout containerMain,fullContainer;
     private FrameLayout miniPlayerContainer;
     private MiniPlayerFragment miniPlayerFragment;
 
@@ -70,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
         setupFragmentListener();
 
         miniPlayerContainer = findViewById(R.id.fl_miniplay);
+        fullContainer = findViewById(R.id.fl_fullplay);
         miniPlayerFragment = new MiniPlayerFragment();
         getSupportFragmentManager()
                 .beginTransaction()
@@ -100,20 +102,44 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void setupFragmentListener() {
-        getSupportFragmentManager().addOnBackStackChangedListener(() -> {
-            if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
-                long animDuration = getResources().getInteger(android.R.integer.config_mediumAnimTime);
-                new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                    containerMain.setVisibility(View.GONE);
-                    viewPager2.setVisibility(View.VISIBLE);
-                }, animDuration);
-            }
-        });
-    }
+
     public void showMiniPlayer(Song song) {
         miniPlayerContainer.setVisibility(View.VISIBLE);
         miniPlayerFragment.bindSong(song);
+    }
+    public void openFullPlayer(Song song) {
+        if (miniPlayerContainer != null) miniPlayerContainer.setVisibility(View.GONE);
+        if (fullContainer != null) fullContainer.setVisibility(View.VISIBLE);
+
+        PlaySongFragment playSongFragment = new PlaySongFragment();
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("song", song);
+        playSongFragment.setArguments(bundle);
+
+        getSupportFragmentManager()
+                .beginTransaction()
+                .setCustomAnimations(
+                        R.anim.slide_in_up,
+                        R.anim.fade_out,
+                        R.anim.fade_in,
+                        R.anim.slide_out_down
+                )
+                .replace(R.id.fl_fullplay, playSongFragment)
+                .addToBackStack("full_player")
+                .commit();
+    }
+
+    // Khi popBackStack → tự động hiện lại mini player
+    private void setupFragmentListener() {
+        getSupportFragmentManager().addOnBackStackChangedListener(() -> {
+            if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
+                showMiniPlayerUI();
+            }
+        });
+    }
+    public void showMiniPlayerUI() {
+        if (miniPlayerContainer != null) miniPlayerContainer.setVisibility(View.VISIBLE);
+        if (fullContainer != null) fullContainer.setVisibility(View.GONE);
     }
 
 }
