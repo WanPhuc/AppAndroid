@@ -374,7 +374,6 @@ public class MusicPlayerService extends android.app.Service implements MediaPlay
     public void toggleShuffle() {
         isShuffling = !isShuffling;
         notifyPlaylistChanged(playingSongs);
-
     }
 
     public boolean isActuallyPlaying() {
@@ -638,6 +637,24 @@ public class MusicPlayerService extends android.app.Service implements MediaPlay
             Log.d("MEDIA_SESSION", "onMediaButtonEvent called (headset)");
             return super.onMediaButtonEvent(mediaButtonIntent);
         }
-
     }
+    public int getCurrentPosition() {
+        if (mediaPlayer != null) {
+            return mediaPlayer.getCurrentPosition();
+        }
+        return 0;
+    }
+
+    public int getDuration() {
+        if (mediaPlayer != null) {
+            return mediaPlayer.getDuration();
+        }
+        return 0;
+    }
+    public void seekTo(int position) {
+        if (mediaPlayer != null) {
+            mediaPlayer.seekTo(position);
+        }
+    }
+
 }

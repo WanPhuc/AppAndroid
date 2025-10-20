@@ -461,6 +461,16 @@ public class CategoryPlaylistFragment extends Fragment implements MusicPlayerSer
                     }
                     songAdapter.notifyDataSetChanged();
                 });
+        db.collection("songs")
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    for (DocumentSnapshot doc : querySnapshot) {
+                        Log.d("Firestore", doc.getId() + " => " + doc.getData());
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("Firestore", "Error: " + e.getMessage());
+                });
     }
 
 

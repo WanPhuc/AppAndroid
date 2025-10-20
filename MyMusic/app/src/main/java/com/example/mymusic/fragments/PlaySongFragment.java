@@ -52,7 +52,7 @@ import java.util.Random;
 import java.util.Timer;
 public class PlaySongFragment extends Fragment implements MusicPlayerService.PlayerListener {
     private ImageView imgSong, btnPlay, btnNext, btnPrev,btnShuffle;
-    private TextView tvSongName, tvPlayArtistName, tvDuration, tvTotal;
+    private TextView tvSongName, tvPlayArtistName, tvTotal, tvCurrentTime;
     private ImageButton btn_back;
     private RecyclerView recy_ActiPlaySong;
     private SeekBar seekBar;
@@ -62,6 +62,8 @@ public class PlaySongFragment extends Fragment implements MusicPlayerService.Pla
     private ArrayList<Artist> artistList = new ArrayList<>();
     private MusicPlayerService musicPlayerService;
     private boolean isServiceBound = false;
+    private android.os.Handler handler = new android.os.Handler();
+    private Runnable updateSeekBarRunnable;
 
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
@@ -71,7 +73,7 @@ public class PlaySongFragment extends Fragment implements MusicPlayerService.Pla
             musicPlayerService.addPlayerListener(PlaySongFragment.this);
             isServiceBound = true;
             updateUIPLaysongFragmentUI();
-            Toast.makeText(getContext(), "Service connected", Toast.LENGTH_SHORT).show();
+            startUpdatingSeekBar();
         }
 
         @Override
@@ -97,6 +99,7 @@ public class PlaySongFragment extends Fragment implements MusicPlayerService.Pla
         tvSongName = view.findViewById(R.id.tvNameSong_ActiPlaySong);
         tvPlayArtistName = view.findViewById(R.id.tvNameArtist_ActiPlaySong);
         tvTotal = view.findViewById(R.id.totalDuration_song);
+        tvCurrentTime = view.findViewById(R.id.duration_song);
         seekBar = view.findViewById(R.id.seekBarSong);
         btnShuffle = view.findViewById(R.id.RandomSong_icon);
 
@@ -105,7 +108,40 @@ public class PlaySongFragment extends Fragment implements MusicPlayerService.Pla
             song = (Song) bundle.getSerializable("song");
 
         }
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            private boolean wasPlayingBeforeSeek = false;
 
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (fromUser && musicPlayerService != null) {
+                    tvCurrentTime.setText(formatTime(progress));
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                // ✅ Ghi lại trạng thái trước khi kéo
+                if (musicPlayerService != null) {
+                    wasPlayingBeforeSeek = musicPlayerService.isPlaying();
+                    if (wasPlayingBeforeSeek) {
+                        musicPlayerService.playPause(); // tạm dừng nhạc
+                    }
+                }
+                handler.removeCallbacks(updateSeekBarRunnable);
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                if (musicPlayerService != null) {
+                    musicPlayerService.seekTo(seekBar.getProgress());
+                    // ✅ Phát lại nếu bài hát đang chạy trước khi tua
+                    if (wasPlayingBeforeSeek) {
+                        musicPlayerService.playPause();
+                    }
+                }
+                startUpdatingSeekBar();
+            }
+        });
         btnPlay.setOnClickListener(v -> {
             //musicPlayerService.playPause();
             if (musicPlayerService.isPlaying()){
@@ -122,6 +158,11 @@ public class PlaySongFragment extends Fragment implements MusicPlayerService.Pla
                 musicPlayerService.playNext();
             }
         });
+        btnPrev.setOnClickListener(v -> {
+            if (isServiceBound && musicPlayerService != null) {
+                musicPlayerService.playPrevious();
+            }
+        });
 
         btn_back.setOnClickListener(v -> {
             if (getActivity() instanceof MainActivity) {
@@ -131,13 +172,10 @@ public class PlaySongFragment extends Fragment implements MusicPlayerService.Pla
         SetUpPlaySong(song);
 
         btnShuffle.setOnClickListener(v -> {
-//            if (isServiceBound) {
-//                if (musicPlayerService.getCurrentSong() == null) {
-//                    musicPlayerService.setSongs(songsList);
-//                }
-//                musicPlayerService.toggleShuffle();
-//                btnShuffle.setImageResource(musicPlayerService.isShuffling() ? R.drawable.ic_shuffle_on : R.drawable.ic_shuffle_disabled);
-//            }
+            if (isServiceBound) {
+                musicPlayerService.toggleShuffle();
+                btnShuffle.setImageResource(musicPlayerService.isShuffling() ? R.drawable.ic_shuffle_on : R.drawable.ic_shuffle_disabled);
+            }
         });
 
         return view;
@@ -186,7 +224,26 @@ public class PlaySongFragment extends Fragment implements MusicPlayerService.Pla
         btnPlay.setImageResource(musicPlayerService.isPlaying() ? R.drawable.ic_pause : R.drawable.ic_play);
         btnShuffle.setImageResource(musicPlayerService.isShuffling() ? R.drawable.ic_shuffle_on : R.drawable.ic_shuffle_disabled);
     }
+    private void startUpdatingSeekBar() {
+        if (musicPlayerService == null) return;
 
+        seekBar.setMax(musicPlayerService.getDuration());
+
+        updateSeekBarRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (musicPlayerService != null && isServiceBound && musicPlayerService.isPlaying()) {
+                    int currentPosition = musicPlayerService.getCurrentPosition();
+                    seekBar.setProgress(currentPosition);
+
+                    // Cập nhật thời gian hiện tại lên TextView
+                    tvCurrentTime.setText(formatTime(currentPosition));
+                }
+                handler.postDelayed(this, 500); // cập nhật mỗi 0.5 giây
+            }
+        };
+        handler.post(updateSeekBarRunnable);
+    }
     @Override
     public void onSongChanged(Song song) {
         SetUpPlaySong(song);
@@ -201,4 +258,11 @@ public class PlaySongFragment extends Fragment implements MusicPlayerService.Pla
     public void onPlaylistChanged(List<Song> playlist) {
 
     }
+    private String formatTime(int millis) {
+        int totalSeconds = millis / 1000;
+        int minutes = totalSeconds / 60;
+        int seconds = totalSeconds % 60;
+        return String.format("%02d:%02d", minutes, seconds);
+    }
+
 }
