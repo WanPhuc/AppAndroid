@@ -52,7 +52,7 @@ public class CategoryPlaylistFragment extends Fragment implements MusicPlayerSer
     private ImageButton btnBack, btnAddLibrary, btnShuffle, btnPlay;
     private ImageView imgSong, imgHeaderBg;
     private RecyclerView rcvCategoryPlaylist;
-
+    private Song playingsong = null;
     private SongAdapter songAdapter;
     private ArrayList<Song> songsList = new ArrayList<>();
     private ArrayList<Artist> artistList = new ArrayList<>();
@@ -171,7 +171,7 @@ public class CategoryPlaylistFragment extends Fragment implements MusicPlayerSer
             // ▶️ Phát bài được click
             musicPlayerService.playSong(song);
             songAdapter.setSelectedPosition(position);
-
+            playingsong = song;
             //hiện mini playẻr
             if (getActivity() instanceof MainActivity) {
                 ((MainActivity) getActivity()).showMiniPlayer(song);
@@ -461,16 +461,6 @@ public class CategoryPlaylistFragment extends Fragment implements MusicPlayerSer
                     }
                     songAdapter.notifyDataSetChanged();
                 });
-        db.collection("songs")
-                .get()
-                .addOnSuccessListener(querySnapshot -> {
-                    for (DocumentSnapshot doc : querySnapshot) {
-                        Log.d("Firestore", doc.getId() + " => " + doc.getData());
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("Firestore", "Error: " + e.getMessage());
-                });
     }
 
 
@@ -645,5 +635,19 @@ public class CategoryPlaylistFragment extends Fragment implements MusicPlayerSer
 
         btnPlay.setImageResource(musicPlayerService.isPlaying() ? R.drawable.ic_pause : R.drawable.ic_play);
         btnShuffle.setImageResource(musicPlayerService.isShuffling() ? R.drawable.ic_shuffle_on : R.drawable.ic_shuffle_disabled);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        AppCompatActivity activity = (AppCompatActivity) requireActivity();
+        ViewPager2 viewPager = activity.findViewById(R.id.vp_fragmain);
+        FrameLayout container = activity.findViewById(R.id.container_main);
+        FrameLayout miniplay = activity.findViewById(R.id.fl_miniplay);
+
+        if (viewPager != null) viewPager.setVisibility(View.VISIBLE);
+        if (container != null) container.setVisibility(View.GONE);
+        if (playingsong == null ) miniplay.setVisibility(View.GONE);
     }
 }

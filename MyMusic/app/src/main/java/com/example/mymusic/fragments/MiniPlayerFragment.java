@@ -7,9 +7,12 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -70,6 +73,28 @@ public class MiniPlayerFragment extends Fragment implements MusicPlayerService.P
         tvArtist = view.findViewById(R.id.tvArtist);
         btnPlayPause = view.findViewById(R.id.btnPlayPause);
         btnNext = view.findViewById(R.id.btnNext);
+
+        GestureDetector gestureDetector = new GestureDetector(requireContext(), new GestureDetector.SimpleOnGestureListener() {
+            private static final int SWIPE_THRESHOLD = 100;  // khoảng cách tối thiểu
+            private static final int SWIPE_VELOCITY_THRESHOLD = 100; // tốc độ tối thiểu
+
+            @Override
+            public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+                float diffX = e2.getX() - e1.getX();
+                if (Math.abs(diffX) > Math.abs(e2.getY() - e1.getY())) {
+                    if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
+                        if (diffX < 0) {
+                            // Vuốt sang trái 👉 ẩn FrameLayout
+                            hideMiniPlayer();
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+        });
+
+        view.setOnTouchListener((v, event) -> gestureDetector.onTouchEvent(event));
         btnPlayPause.setOnClickListener(v -> {
             //musicPlayerService.playPause();
             if (musicPlayerService.isPlaying()){
@@ -143,7 +168,23 @@ public class MiniPlayerFragment extends Fragment implements MusicPlayerService.P
         btnPlayPause.setImageResource(musicPlayerService.isPlaying() ? R.drawable.ic_pause : R.drawable.ic_play);
     }
 
-
+    private void hideMiniPlayer() {
+        View container = requireActivity().findViewById(R.id.fl_miniplay);
+        if (container != null) {
+            // Hiệu ứng trượt sang trái trước khi ẩn
+            container.animate()
+                    .translationX(-container.getWidth())
+                    .alpha(0f)
+                    .setDuration(250)
+                    .withEndAction(() -> {
+                        container.setVisibility(View.GONE);
+                        container.setTranslationX(0);
+                        container.setAlpha(1f);
+                    })
+                    .start();
+        }
+        musicPlayerService.playPause() ;
+    }
     @Override
     public void onSongChanged(Song song) {
         bindSong(song);
@@ -158,4 +199,6 @@ public class MiniPlayerFragment extends Fragment implements MusicPlayerService.P
     public void onPlaylistChanged(List<Song> playlist) {
 
     }
+
+
 }

@@ -102,6 +102,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
         // 🎨 Highlight nếu đang chọn
         if (position == selectedPosition) {
             holder.nameSong.setTextColor(holder.itemView.getContext().getResources().getColor(R.color.select_song_play));
+            //)
         } else {
             holder.nameSong.setTextColor(holder.itemView.getContext().getResources().getColor(android.R.color.white));
         }
