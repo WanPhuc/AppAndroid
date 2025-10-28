@@ -31,11 +31,13 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nonnull;
 
@@ -51,7 +53,9 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
     private boolean isFavoritesPlaylist = false; // Flag for favorites playlist
     private String currentPlaylistId; // To know which playlist is being displayed
 
-
+    private static final int VIEW_TYPE_COMPACT = 0; // Dạng nhỏ (trang chủ, ngang)
+    private static final int VIEW_TYPE_DETAIL = 1;  // Dạng đầy đủ (playlist, danh sách dọc)
+    private boolean isCompactLayout = false; // flag chọn layout
     public interface OnSongClickListener {
         void onSongClick(Song song, int position);
     }
@@ -71,7 +75,11 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
     public void setCurrentPlaylistId(String playlistId) {
         this.currentPlaylistId = playlistId;
     }
-
+    //hàm chuyển layout
+    public void setCompactLayout(boolean compactLayout) {
+        this.isCompactLayout = compactLayout;
+        notifyDataSetChanged();
+    }
     public SongAdapter(Context context, ArrayList<Song> songs, ArrayList<Playlist> playlists, ArrayList<Artist> artists) {
         this.context = context;
         this.songs = songs;
@@ -84,50 +92,116 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
     @Nonnull
     @Override
     public SongViewHolder onCreateViewHolder(@Nonnull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_song, parent, false);
-        return new SongViewHolder(view);
+        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+        if (viewType == VIEW_TYPE_COMPACT) {
+            View view = inflater.inflate(R.layout.item_song_grid, parent, false);
+            return new CompactViewHolder(view);
+        } else {
+            View view = inflater.inflate(R.layout.item_song, parent, false);
+            return new DetailViewHolder(view);
+        }
     }
 
     @Override
     public void onBindViewHolder(@Nonnull SongViewHolder holder, int position) {
         Song song = songs.get(position);
-        holder.nameSong.setText(song.getTitle());
-        holder.nameArtist.setText(artistMap.getOrDefault(song.getArtistID(), "Unknown"));
-
-        Glide.with(holder.itemView.getContext())
-                .load(song.getCoverUrl())
-                .diskCacheStrategy(DiskCacheStrategy.ALL) // Cache both original & resized image
-                .placeholder(R.drawable.img_default_song)
-                .into(holder.imgSong);
-        // 🎨 Highlight nếu đang chọn
-        if (position == selectedPosition) {
-            holder.nameSong.setTextColor(holder.itemView.getContext().getResources().getColor(R.color.select_song_play));
-            //)
-        } else {
-            holder.nameSong.setTextColor(holder.itemView.getContext().getResources().getColor(android.R.color.white));
+        if (holder instanceof CompactViewHolder) {
+            ((CompactViewHolder) holder).bind(song, artistMap, position);
+        } else if (holder instanceof DetailViewHolder) {
+            ((DetailViewHolder) holder).bind(song, artistMap, position);
         }
-        holder.itemView.setOnClickListener(v -> {
-            int pos = holder.getAdapterPosition();
-            if (pos == RecyclerView.NO_POSITION) return;
+    }
 
-            int prev = selectedPosition;
-            selectedPosition = pos;
+    // ====== ViewType chọn XML theo chế độ true - dọc/ false - ngang ======
+    @Override
+    public int getItemViewType(int position) {
+        return isCompactLayout ? VIEW_TYPE_COMPACT : VIEW_TYPE_DETAIL;
+    }
+    // ====== layout song doc ======
+    class CompactViewHolder extends SongViewHolder {
+        ImageView imgSong;
+        TextView nameSong, nameArtist;
 
-            if (prev != RecyclerView.NO_POSITION) notifyItemChanged(prev);
-            notifyItemChanged(selectedPosition);
+        CompactViewHolder(@Nonnull View itemView) {
+            super(itemView);
+            imgSong = itemView.findViewById(R.id.img_song);
+            nameSong = itemView.findViewById(R.id.tv_nameSong);
+            nameArtist = itemView.findViewById(R.id.tv_nameArtist);
+        }
 
-            if (listener != null) {
-                listener.onSongClick(songs.get(pos), pos); // truyền Song + position
+        void bind(Song song, HashMap<String, String> artistMap,int position ) {
+            nameSong.setText(song.getTitle());
+            nameArtist.setText(artistMap.getOrDefault(song.getArtistID(), "Unknown"));
+            Glide.with(context)
+                    .load(song.getCoverUrl())
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .placeholder(R.drawable.img_default_song)
+                    .into(imgSong);
 
+            itemView.setOnClickListener(v -> {
+                Toast.makeText(context, "Bấm vào " + song.getTitle() , Toast.LENGTH_SHORT).show();
+                int pos = getAdapterPosition();
+                if (pos == RecyclerView.NO_POSITION) return;
+
+                int prev = selectedPosition;
+                selectedPosition = pos;
+
+                if (prev != RecyclerView.NO_POSITION) notifyItemChanged(prev);
+                notifyItemChanged(selectedPosition);
+
+                if (listener != null) listener.onSongClick(song, pos);
+                addToRecentlyPlayed(song);
+            });
+        }
+    }
+
+    // ====== layout song ngang ======
+    class DetailViewHolder extends SongViewHolder {
+        ImageView imgSong;
+        TextView nameSong, nameArtist;
+        ImageButton btnMore;
+
+        DetailViewHolder(@Nonnull View itemView) {
+            super(itemView);
+            imgSong = itemView.findViewById(R.id.img_song);
+            nameSong = itemView.findViewById(R.id.tv_nameSong);
+            nameArtist = itemView.findViewById(R.id.tv_nameArtist);
+            btnMore = itemView.findViewById(R.id.btn_more);
+        }
+
+        void bind(Song song, HashMap<String, String> artistMap, int position) {
+            nameSong.setText(song.getTitle());
+            nameArtist.setText(artistMap.getOrDefault(song.getArtistID(), "Unknown"));
+
+            Glide.with(context)
+                    .load(song.getCoverUrl())
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .placeholder(R.drawable.img_default_song)
+                    .into(imgSong);
+
+            if (position == selectedPosition) {
+                nameSong.setTextColor(context.getResources().getColor(R.color.select_song_play));
+            } else {
+                nameSong.setTextColor(context.getResources().getColor(android.R.color.white));
             }
 
+            itemView.setOnClickListener(v -> {
+                Toast.makeText(context, "Bấm vào " + song.getTitle() , Toast.LENGTH_SHORT).show();
+                int pos = getAdapterPosition();
+                if (pos == RecyclerView.NO_POSITION) return;
 
-        });
+                int prev = selectedPosition;
+                selectedPosition = pos;
 
-        holder.btnMore.setOnClickListener(v -> {
-            showPopupMenu(v, song);
-        });
+                if (prev != RecyclerView.NO_POSITION) notifyItemChanged(prev);
+                notifyItemChanged(selectedPosition);
 
+                if (listener != null) listener.onSongClick(song, pos);
+                addToRecentlyPlayed(song);
+            });
+
+            btnMore.setOnClickListener(v -> showPopupMenu(v, song));
+        }
     }
 
     private void showPopupMenu(View anchorView, Song song) {
@@ -374,7 +448,21 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
                 })
                 .addOnFailureListener(e -> Toast.makeText(context, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
+    private void addToRecentlyPlayed(Song song) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        String userID = FirebaseAuth.getInstance().getUid();
+        if (userID == null) return;
 
+        Map<String, Object> data = new HashMap<>();
+        data.put("songID", song.getSongID());
+        data.put("timestamp", FieldValue.serverTimestamp()); // thời gian nghe
+
+        db.collection("Users")
+                .document(userID)
+                .collection("RecentlyPlayed")
+                .document(song.getSongID())  // dùng songID làm key → tránh trùng
+                .set(data, SetOptions.merge()); // chỉ update timestamp nếu đã tồn tại
+    }
     private void showCreatePlaylistDialog(Song song) {
         EditText input = new EditText(context);
         input.setHint("Nhập tên playlist");
@@ -459,5 +547,44 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
             notifyItemChanged(prev);
         }
         notifyItemChanged(selectedPosition);
+    }
+    public void bindSongView(SongViewHolder holder, Song song, int position) {
+
+        // Set tên bài hát
+        holder.nameSong.setText(song.getTitle());
+
+        // Lấy tên ca sĩ từ artistMap dựa theo artistID
+        String artistName = artistMap.get(song.getArtistID());
+        holder.nameArtist.setText(artistName != null ? artistName : "Unknown");
+
+        // Load ảnh bài hát
+        Glide.with(context)
+                .load(song.getCoverUrl())
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .placeholder(R.drawable.img_default_song)
+                .into(holder.imgSong);
+
+        // Đổi màu bài hát đang phát
+        if (position == selectedPosition) {
+            holder.nameSong.setTextColor(context.getResources().getColor(R.color.select_song_play));
+        } else {
+            holder.nameSong.setTextColor(context.getResources().getColor(android.R.color.white));
+        }
+
+        // Xử lý click bài hát
+        holder.itemView.setOnClickListener(v -> {
+
+            int pos = holder.getAdapterPosition();
+            if (pos == RecyclerView.NO_POSITION) return;
+
+            int prev = selectedPosition;
+            selectedPosition = pos;
+
+            if (prev != RecyclerView.NO_POSITION) notifyItemChanged(prev);
+            notifyItemChanged(selectedPosition);
+            if (listener != null) listener.onSongClick(song, pos);
+
+
+        });
     }
 }

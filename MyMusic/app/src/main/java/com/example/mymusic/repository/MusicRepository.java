@@ -6,10 +6,12 @@ import com.example.mymusic.models.Artist;
 import com.example.mymusic.models.Playlist;
 import com.example.mymusic.models.Song;
 import com.example.mymusic.models.User;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
 
@@ -42,7 +44,70 @@ public class MusicRepository {
             listener.onDataLoaded(songList);
         });
     }
+    public void listenRecentlyPlayed(OnDataLoadedListener<Song> listener) {
+        String userID = FirebaseAuth.getInstance().getUid();
+        if (userID == null) return;
 
+        usersRef.document(userID)
+                .collection("RecentlyPlayed")
+                .orderBy("timestamp", Query.Direction.DESCENDING)
+                .addSnapshotListener((query, e) -> {
+                    if (e != null || query == null) return;
+
+                    ArrayList<String> songIDs = new ArrayList<>();
+                    for (DocumentSnapshot doc : query.getDocuments()) {
+                        String songID = doc.getString("songID");
+                        if (songID != null) songIDs.add(songID);
+                    }
+
+                    // load Song objects từ songID
+                    ArrayList<Song> result = new ArrayList<>();
+                    for (String id : songIDs) {
+                        songsRef.document(id).get().addOnSuccessListener(songDoc -> {
+                            Song song = songDoc.toObject(Song.class);
+                            if (song != null) {
+                                song.setSongID(songDoc.getId());
+                                result.add(song);
+                                listener.onDataLoaded(result); // update UI dần
+                            }
+                        });
+                    }
+                });
+    }
+    public void getTop3RecentlyPlayed(OnDataLoadedListener<Song> listener) {
+        String userID = FirebaseAuth.getInstance().getUid();
+        if (userID == null) return;
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        db.collection("Users")
+                .document(userID)
+                .collection("RecentlyPlayed")
+                .orderBy("timestamp", Query.Direction.DESCENDING) // bài nghe mới nhất trước
+                .limit(3) // chỉ lấy 3 bài
+                .get()
+                .addOnSuccessListener(query -> {
+                    ArrayList<Song> result = new ArrayList<>();
+
+                    for (DocumentSnapshot doc : query.getDocuments()) {
+                        String songID = doc.getString("songID");
+                        if (songID == null) continue;
+
+                        // Lấy song chi tiết từ Songs collection
+                        db.collection("Songs")
+                                .document(songID)
+                                .get()
+                                .addOnSuccessListener(songDoc -> {
+                                    Song song = songDoc.toObject(Song.class);
+                                    if (song != null) {
+                                        song.setSongID(songDoc.getId());
+                                        result.add(song);
+                                        listener.onDataLoaded(result); // cập nhật UI dần
+                                    }
+                                });
+                    }
+                });
+    }
     // -------- Genres (Songs) --------
     public void listenAllGenres(OnDataLoadedListener<String> listener) {
         songsRef.addSnapshotListener((query, e) -> {

@@ -1,26 +1,21 @@
-<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:paddingBottom="16dp">
+    android:paddingTop="12dp">
 
     <TextView
-        android:id="@+id/trending_title"
+        android:id="@+id/catetory_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textStyle="bold"
         android:textSize="18sp"
         android:textColor="@android:color/white"
-        android:layout_marginBottom="8dp"
-        />
+        android:layout_marginBottom="8dp"/>
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerTrending"
+        android:id="@+id/recycler_items_catetory"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:overScrollMode="never"
-        android:padding="8dp"
-         />
+        android:overScrollMode="never"/>
 </LinearLayout>

@@ -130,14 +130,16 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     // ---------------- Artist List (ngang) ----------------
     static class ArtistListViewHolder extends RecyclerView.ViewHolder {
         private final RecyclerView recyclerView;
-
+        private final TextView textView;
         ArtistListViewHolder(View itemView) {
             super(itemView);
             recyclerView = itemView.findViewById(R.id.recyclerTrending);
+            textView = itemView.findViewById(R.id.trending_title);
             recyclerView.setLayoutManager(new LinearLayoutManager(itemView.getContext(), RecyclerView.HORIZONTAL, false));
         }
 
         void bind(ArrayList<Artist> artists) {
+            textView.setVisibility(View.GONE);
             ArtistAdapter adapter = new ArtistAdapter(artists);
             recyclerView.setAdapter(adapter);
         }

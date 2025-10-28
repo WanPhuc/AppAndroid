@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.ColorUtils;
@@ -65,6 +66,7 @@ public class CategoryPlaylistAdapter extends RecyclerView.Adapter<CategoryPlayli
             viewPager.setVisibility(View.GONE);
             FrameLayout container =activity.findViewById(R.id.container_main);
             container.setVisibility(View.VISIBLE);
+
         });
 
 

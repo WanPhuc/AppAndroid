@@ -280,7 +280,7 @@ public class MusicPlayerService extends android.app.Service implements MediaPlay
         return result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED;
     }
 
-    private void _playSong(Song song) {
+    public void _playSong(Song song) {
         if (song == null || !requestAudioFocus()) return;
         progressHandler.removeCallbacks(updateProgressRunnable);
 
