@@ -71,7 +71,7 @@ public class CategoryPlaylistFragment extends Fragment implements MusicPlayerSer
         public void onServiceConnected(ComponentName name, IBinder service) {
             MusicPlayerService.MusicPlayerBinder binder = (MusicPlayerService.MusicPlayerBinder) service;
             musicPlayerService = binder.getService();
-            musicPlayerService.addPlayerListener(CategoryPlaylistFragment.this);
+            //musicPlayerService.addPlayerListener(CategoryPlaylistFragment.this);
 
             if (!artistList.isEmpty()) {
                 musicPlayerService.setArtists(artistList);
@@ -225,6 +225,7 @@ public class CategoryPlaylistFragment extends Fragment implements MusicPlayerSer
 
         btnBack.setOnClickListener(v -> {
             requireActivity().getSupportFragmentManager().popBackStack();
+            updateUI();
         });
 
         btnAddLibrary.setOnClickListener(v -> {

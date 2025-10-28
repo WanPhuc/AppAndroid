@@ -68,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
         MainAdapter adapter=new MainAdapter(this);
         viewPager2.setAdapter(adapter);
         setupNavigation();
-        setupFragmentListener();
+
 
         miniPlayerContainer = findViewById(R.id.fl_miniplay);
         fullContainer = findViewById(R.id.fl_fullplay);
@@ -129,14 +129,7 @@ public class MainActivity extends AppCompatActivity {
                 .commit();
     }
 
-    // Khi popBackStack → tự động hiện lại mini player
-    private void setupFragmentListener() {
-        getSupportFragmentManager().addOnBackStackChangedListener(() -> {
-            if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
-                showMiniPlayerUI();
-            }
-        });
-    }
+
     public void showMiniPlayerUI() {
         if (miniPlayerContainer != null) miniPlayerContainer.setVisibility(View.VISIBLE);
         if (fullContainer != null) fullContainer.setVisibility(View.GONE);

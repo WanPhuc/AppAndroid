@@ -14,6 +14,7 @@ import com.example.mymusic.R;
 import com.example.mymusic.models.Artist;
 import com.example.mymusic.models.Playlist;
 import com.example.mymusic.models.Song;
+import com.example.mymusic.services.MusicPlayerService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +30,11 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     private List<Object> items; // DateHeader hoặc Song
     private Context context;
     private SongAdapter songAdapter;
+    public MusicPlayerService musicPlayerService;
+    private  boolean isServiceBound = false;
+    public void setMusicPlayerService(MusicPlayerService service) {
+        this.musicPlayerService = service;
+    }
 
     public HistoryAdapter(Context context, List<Object> items,SongAdapter songAdapter ) {
         this.context = context;
@@ -57,16 +63,14 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        Object item = items.get(position);
+
         if (holder instanceof HeaderHolder) {
-            ((HeaderHolder) holder).tvDate.setText((String) items.get(position));
-        } else {
-            Song song = (Song) items.get(position);
-
-            // ép ViewHolder về SongAdapter.SongViewHolder
+            ((HeaderHolder) holder).tvDate.setText((String) item);
+        } else if (item instanceof Song) {
+            Song song = (Song) item;
             SongAdapter.SongViewHolder vh = (SongAdapter.SongViewHolder) holder;
-
-            // Gọi bindSongView trong SongAdapter
-            songAdapter.bindSongView(vh, song, position);
+            songAdapter.bindSongView(vh, song, position,musicPlayerService);
         }
 
     }

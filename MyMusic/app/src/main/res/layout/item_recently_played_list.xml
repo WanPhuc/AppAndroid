@@ -5,34 +5,14 @@
     android:paddingTop="12dp"
     android:paddingBottom="12dp">
 
-    <!-- Hàng tiêu đề + nút Chi tiết -->
-    <LinearLayout
+    <TextView
+        android:id="@+id/section_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingHorizontal="8dp">
-
-        <TextView
-            android:id="@+id/section_title"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Tiêu đề"
-            android:textStyle="bold"
-            android:textSize="18sp"
-            android:textColor="@android:color/white"/>
-
-        <ImageButton
-            android:id="@+id/btn_detail"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:background="@android:color/transparent"
-            android:contentDescription="Chi tiết"
-            android:padding="6dp"
-            android:rotation="180"
-            android:src="@drawable/ic_arrow_back" />
-    </LinearLayout>
+        android:text="Lịch sử nghe"
+        android:textStyle="bold"
+        android:textSize="20sp"
+        android:textColor="@android:color/white"/>
 
     <!-- List Items -->
     <androidx.recyclerview.widget.RecyclerView

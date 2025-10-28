@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.mymusic.R;
+import com.example.mymusic.activities.MainActivity;
 import com.example.mymusic.fragments.CategoryPlaylistFragment;
 import com.example.mymusic.fragments.PlayedSongDetailFragment;
 import com.example.mymusic.fragments.SearchFragment;
@@ -143,15 +144,32 @@ public class HomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     playlists,
                     artists);
             recyclerView.setAdapter(adapter);
-            if (musicPlayerService != null) {
-                Toast.makeText(context, "khong co: ", Toast.LENGTH_SHORT).show();
-                musicPlayerService.setSongs(new ArrayList<>(section.getSongs()));
+            if (musicPlayerService == null) {
+                Toast.makeText(context, "khong co musicPlayerService: ", Toast.LENGTH_SHORT).show();
             }
-            //musicPlayerService.setSongs(new ArrayList<>(section.getSongs()));
+            musicPlayerService.setSongs(new ArrayList<>(section.getSongs()));
+            ArrayList<Song> songsList = new ArrayList<>(section.getSongs());
             //sự kiện click
             adapter.setOnSongClickListener((song, pos) -> {
-                Toast.makeText(context, "Song clicked: " + song.getTitle(), Toast.LENGTH_SHORT).show();
+                List<Song> currentServicePlaylist = musicPlayerService.getOriginalSongs();
+                boolean isDifferentPlaylist = currentServicePlaylist == null
+                        || currentServicePlaylist.isEmpty()
+                        || currentServicePlaylist.size() != songsList.size()
+                        || !currentServicePlaylist.get(0).getSongID().equals(songsList.get(0).getSongID());
+
+                if (isDifferentPlaylist) {
+                    // 🛑 Stop playlist cũ
+                    musicPlayerService.stop();
+                    // 🔁 Set playlist mới
+                    musicPlayerService.setSongs(new ArrayList<>(songsList));
+                }
+
+                // ▶️ Phát bài được click
                 musicPlayerService.playSong(song);
+                //hiện mini playẻr
+                if (context instanceof MainActivity) {
+                    ((MainActivity) context).showMiniPlayer(song);
+                }
             });
             //set layout
             adapter.setCompactLayout(true);
@@ -186,8 +204,32 @@ public class HomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             recyclerView.setAdapter(adapter);
             adapter.updateArtists(artists);
             //sự kiện click
+            if (musicPlayerService == null) {
+                Toast.makeText(context, "khong co musicPlayerService: ", Toast.LENGTH_SHORT).show();
+            }
+            musicPlayerService.setSongs(new ArrayList<>(section.getSongs()));
+            ArrayList<Song> songsList = new ArrayList<>(section.getSongs());
+            //sự kiện click
             adapter.setOnSongClickListener((song, pos) -> {
+                List<Song> currentServicePlaylist = musicPlayerService.getOriginalSongs();
+                boolean isDifferentPlaylist = currentServicePlaylist == null
+                        || currentServicePlaylist.isEmpty()
+                        || currentServicePlaylist.size() != songsList.size()
+                        || !currentServicePlaylist.get(0).getSongID().equals(songsList.get(0).getSongID());
 
+                if (isDifferentPlaylist) {
+                    // 🛑 Stop playlist cũ
+                    musicPlayerService.stop();
+                    // 🔁 Set playlist mới
+                    musicPlayerService.setSongs(new ArrayList<>(songsList));
+                }
+
+                // ▶️ Phát bài được click
+                musicPlayerService.playSong(song);
+                //hiện mini playẻr
+                if (context instanceof MainActivity) {
+                    ((MainActivity) context).showMiniPlayer(song);
+                }
             });
             //set layout
             adapter.setCompactLayout(false);
@@ -250,6 +292,12 @@ public class HomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     playlists,
                     artists);
             recyclerView.setAdapter(adapter);
+            if (musicPlayerService != null) {
+                adapter.setMusicPlayerService(musicPlayerService);
+            } else {
+                Toast.makeText(context, "khong co musicPlayerService: ", Toast.LENGTH_SHORT).show();
+            }
+            adapter.setMusicPlayerService(musicPlayerService);
             button.setOnClickListener(v -> {
                 AppCompatActivity activity = (AppCompatActivity) v.getContext();
                 // Chuyển Fragment
@@ -269,11 +317,10 @@ public class HomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
                 FrameLayout container = activity.findViewById(R.id.container_main);
                 container.setVisibility(View.VISIBLE);
-            });
 
-            adapter.setCompactLayout(false);
-            adapter.setOnSongClickListener((song, pos) -> {
             });
+            adapter.setCompactLayout(false);
+
         }
     }
 

@@ -21,10 +21,12 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.mymusic.R;
 import com.example.mymusic.SongDownloadManager;
+import com.example.mymusic.activities.MainActivity;
 import com.example.mymusic.models.Artist;
 import com.example.mymusic.models.Playlist;
 import com.example.mymusic.models.Song;
 import com.example.mymusic.models.User;
+import com.example.mymusic.services.MusicPlayerService;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -56,6 +58,11 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
     private static final int VIEW_TYPE_COMPACT = 0; // Dạng nhỏ (trang chủ, ngang)
     private static final int VIEW_TYPE_DETAIL = 1;  // Dạng đầy đủ (playlist, danh sách dọc)
     private boolean isCompactLayout = false; // flag chọn layout
+    public MusicPlayerService musicPlayerService;
+    private  boolean isServiceBound = false;
+    public void setMusicPlayerService(MusicPlayerService service) {
+        this.musicPlayerService = service;
+    }
     public interface OnSongClickListener {
         void onSongClick(Song song, int position);
     }
@@ -548,8 +555,8 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
         }
         notifyItemChanged(selectedPosition);
     }
-    public void bindSongView(SongViewHolder holder, Song song, int position) {
-
+    public void bindSongView(SongViewHolder holder, Song song, int position, MusicPlayerService musicPlayerService) {
+        Song currentSong = song;
         // Set tên bài hát
         holder.nameSong.setText(song.getTitle());
 
@@ -583,7 +590,16 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
             if (prev != RecyclerView.NO_POSITION) notifyItemChanged(prev);
             notifyItemChanged(selectedPosition);
             if (listener != null) listener.onSongClick(song, pos);
-
+            Toast.makeText(context, "bài " + song.getTitle(), Toast.LENGTH_SHORT).show();
+            if (musicPlayerService == null) {
+                Toast.makeText(context, "khong co musicPlayerService: ", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            musicPlayerService.stop();
+            musicPlayerService.playSong(song);
+            if (context instanceof MainActivity) {
+                ((MainActivity) context).showMiniPlayer(song);
+            }
 
         });
     }

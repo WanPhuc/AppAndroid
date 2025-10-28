@@ -49,6 +49,25 @@ public class HomeFragment extends Fragment implements MusicPlayerService.PlayerL
     private MusicPlayerService musicPlayerService;
     private boolean isServiceBound = false;
 
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        if (!isServiceBound) {
+            android.content.Intent intent = new android.content.Intent(requireContext(), MusicPlayerService.class);
+            requireContext().bindService(intent, serviceConnection, android.content.Context.BIND_AUTO_CREATE);
+        }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (isServiceBound) {
+            requireContext().unbindService(serviceConnection);
+            isServiceBound = false;
+        }
+    }
+
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -56,15 +75,16 @@ public class HomeFragment extends Fragment implements MusicPlayerService.PlayerL
             musicPlayerService = binder.getService();
             isServiceBound = true;
 
-            // ✅ Truyền service vào adapter
+            // Truyền service vào adapter
             if (homeAdapter != null) {
                 homeAdapter.setMusicPlayerService(musicPlayerService);
+
             }
 
-            // ✅ Đăng ký listener (UI update)
+            // Đăng ký listener (UI update)
             musicPlayerService.addPlayerListener(HomeFragment.this);
 
-            // ✅ Cung cấp danh sách nghệ sĩ cho service để notification hiển thị đúng
+            // Cung cấp danh sách nghệ sĩ cho service để notification hiển thị đúng
             if (!artistList.isEmpty()) {
                 musicPlayerService.setArtists(artistList);
             }
@@ -88,7 +108,7 @@ public class HomeFragment extends Fragment implements MusicPlayerService.PlayerL
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         repo = new MusicRepository();
         homeAdapter = new HomeAdapter(getContext(), homeItems, playList, artistList);
-
+        songAdapter = new SongAdapter(getContext(), songsList, playList, artistList);
         recyclerView.setAdapter(homeAdapter);
 
 
