@@ -96,6 +96,8 @@ public class MainActivity extends AppCompatActivity {
                 viewPager2.setCurrentItem(1, false);
             } else if (itemId == R.id.libraryicon) {
                 viewPager2.setCurrentItem(2, false);
+            } else if (itemId == R.id.accounticon) {
+                viewPager2.setCurrentItem(3, false);
             }
 
             return true;

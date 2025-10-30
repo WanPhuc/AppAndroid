@@ -12,7 +12,8 @@
         android:layout_height="80dp"
         android:scaleType="centerCrop"
         android:src="@drawable/artist"
-        app:shapeAppearanceOverlay="@style/CircleImageView" />
+        app:shapeAppearanceOverlay="@style/CircleImageView"
+        />
 
     <TextView
         android:id="@+id/tvArtistName"
