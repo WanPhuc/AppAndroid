@@ -22,7 +22,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:text="quocvan"
-                android:textColor="@color/white"
+                android:textColor="@color/textcolor"
                 android:textSize="26dp" />
         </LinearLayout>
     </LinearLayout>
@@ -39,7 +39,8 @@
             android:layout_height="match_parent"
             android:backgroundTint="@color/primary"
             android:text="Sửa tên"
-            android:textSize="17dp" />
+            android:textSize="17dp"
+            android:textColor="@color/textcolor"/>
 
         <Button
             android:id="@+id/timeout"
@@ -47,7 +48,8 @@
             android:layout_height="match_parent"
             android:backgroundTint="@color/primary"
             android:text="Hẹn giờ tắt"
-            android:textSize="17dp"/>
+            android:textSize="17dp"
+            android:textColor="@color/textcolor"/>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -59,14 +61,17 @@
                 android:layout_width="333dp"
                 android:layout_height="wrap_content"
                 android:paddingLeft="24dp"
-                android:text="Dark mode"
-                android:textColor="@color/white"
+                android:text="Chế độ tối"
+                android:textColor="@color/textcolor"
                 android:textSize="19dp" />
 
             <Switch
                 android:id="@+id/switchDarkMode"
                 android:layout_width="56dp"
-                android:layout_height="match_parent" />
+                android:layout_height="match_parent"
+                android:checked="true"
+                />
+
         </LinearLayout>
         <Button
             android:id="@+id/logout"

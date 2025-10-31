@@ -42,7 +42,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Name Item"
-            android:textColor="@color/white"
+            android:textColor="@color/textcolor"
             android:textSize="25dp" />
         <LinearLayout
             android:layout_width="wrap_content"
@@ -65,7 +65,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
             android:text="Name Item"
-            android:textColor="#848484"
+            android:textColor="@color/textcolor"
             android:textSize="15dp"
             android:layout_marginLeft="10dp"/>
         </LinearLayout>
@@ -77,6 +77,7 @@
         android:layout_height="40dp"
         android:background="@drawable/ic_more"
         android:layout_alignParentEnd="true"
-        android:layout_centerVertical="true"/>
+        android:layout_centerVertical="true"
+        />
     </RelativeLayout>
 </LinearLayout>

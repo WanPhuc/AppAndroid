@@ -27,10 +27,13 @@ import com.bumptech.glide.Glide;
 import com.example.mymusic.R;
 import com.example.mymusic.activities.MainActivity;
 import com.example.mymusic.adapters.MainAdapter;
+import com.example.mymusic.models.Artist;
 import com.example.mymusic.models.Song;
 import com.example.mymusic.services.MusicPlayerService;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.example.mymusic.fragments.PlaySongFragment;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class MiniPlayerFragment extends Fragment implements MusicPlayerService.PlayerListener {
@@ -38,6 +41,8 @@ public class MiniPlayerFragment extends Fragment implements MusicPlayerService.P
     private TextView tvTitle,tvArtist;
     private ImageButton btnPlayPause,btnNext;
     private Song playsong;
+    private ArrayList<Song> songs = new ArrayList<>();
+    private ArrayList<Artist> artists = new ArrayList<>();
 
     private MusicPlayerService musicPlayerService;
     private boolean isServiceBound = false;
@@ -50,7 +55,7 @@ public class MiniPlayerFragment extends Fragment implements MusicPlayerService.P
             musicPlayerService.addPlayerListener(MiniPlayerFragment.this);
             isServiceBound = true;
             updateUIMinifragmentUI();
-
+            playsong = musicPlayerService.getCurrentSong();
         }
 
         @Override
@@ -94,6 +99,7 @@ public class MiniPlayerFragment extends Fragment implements MusicPlayerService.P
             }
         });
 
+
         view.setOnTouchListener((v, event) -> gestureDetector.onTouchEvent(event));
         btnPlayPause.setOnClickListener(v -> {
             //musicPlayerService.playPause();
@@ -115,7 +121,7 @@ public class MiniPlayerFragment extends Fragment implements MusicPlayerService.P
                 Song currentSong = musicPlayerService.getCurrentSong();
                 if (currentSong != null) {
                     if (getActivity() instanceof MainActivity) {
-                        ((MainActivity) getActivity()).openFullPlayer(currentSong);
+                        ((MainActivity) getActivity()).openFullPlayer(currentSong,songs,artists);
                     }
                 }
             }
@@ -126,6 +132,7 @@ public class MiniPlayerFragment extends Fragment implements MusicPlayerService.P
     }
     public void bindSong(Song song) {
         if (song == null || getView() == null) return;
+        playsong = song;
         // Cập nhật tên bài hát
         TextView tvTitle = getView().findViewById(R.id.tvTitle);
         tvTitle.setText(song.getTitle());
@@ -188,6 +195,7 @@ public class MiniPlayerFragment extends Fragment implements MusicPlayerService.P
     @Override
     public void onSongChanged(Song song) {
         bindSong(song);
+
     }
 
     @Override
@@ -200,5 +208,28 @@ public class MiniPlayerFragment extends Fragment implements MusicPlayerService.P
 
     }
 
+    public void SetArrayListSong(ArrayList<Song> songs,ArrayList<Artist> artists){
+        this.songs = songs;
+        this.artists = artists;
+        Log.d("MiniPlayer", "SetArrayListSong() - songs: " + this.songs.size() + ", artists: " + this.artists.size());
+        Toast.makeText(getContext(), "MiniPlayer nhận " + songs.size() + " bài và " + artists.size() + " nghệ sĩ", Toast.LENGTH_SHORT).show();
+    }
+    @Override
+    public void onResume() {
+        super.onResume();
+//        if(playsong != null){
+//
+//        }
+//        Log.d("PLAYSONG", "onResume: " + playsong);
+//
+//        if (musicPlayerService != null) {
+//
+//            if (getContext() instanceof MainActivity) {
+//                ((MainActivity) getContext()).showMiniPlayer(playsong);
+//                Toast.makeText(getContext(), "dsads", Toast.LENGTH_SHORT).show();
+//            }
+//        }
+
+    }
 
 }

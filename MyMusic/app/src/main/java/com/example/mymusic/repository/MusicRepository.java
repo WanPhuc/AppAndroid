@@ -10,10 +10,15 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.Timestamp;
 
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MusicRepository {
     private final FirebaseFirestore db;
@@ -21,6 +26,12 @@ public class MusicRepository {
     private final CollectionReference artistsRef;
     private final CollectionReference playlistsRef;
     private final CollectionReference usersRef;
+    private final Map<String, Timestamp> recentlyPlayedTimestamps = new HashMap<>();
+
+    private final Map<String, Timestamp> songTimestamps = new HashMap<>();
+    public Timestamp getTimestamp(String songID) {
+        return songTimestamps.get(songID);
+    }
 
     public MusicRepository() {
         db = FirebaseFirestore.getInstance();
@@ -55,12 +66,17 @@ public class MusicRepository {
                     if (e != null || query == null) return;
 
                     ArrayList<String> songIDs = new ArrayList<>();
+                    songTimestamps.clear(); // ✅ reset lại trước mỗi lần nghe mới
+
                     for (DocumentSnapshot doc : query.getDocuments()) {
                         String songID = doc.getString("songID");
-                        if (songID != null) songIDs.add(songID);
+                        com.google.firebase.Timestamp ts = doc.getTimestamp("timestamp");
+                        if (songID != null) {
+                            songIDs.add(songID);
+                            songTimestamps.put(songID, ts); // ✅ lưu timestamp theo songID
+                        }
                     }
 
-                    // load Song objects từ songID
                     ArrayList<Song> result = new ArrayList<>();
                     for (String id : songIDs) {
                         songsRef.document(id).get().addOnSuccessListener(songDoc -> {
@@ -68,7 +84,7 @@ public class MusicRepository {
                             if (song != null) {
                                 song.setSongID(songDoc.getId());
                                 result.add(song);
-                                listener.onDataLoaded(result); // update UI dần
+                                listener.onDataLoaded(result); // vẫn update UI dần
                             }
                         });
                     }

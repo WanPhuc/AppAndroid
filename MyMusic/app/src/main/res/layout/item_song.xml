@@ -1,5 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="center_vertical"
@@ -23,14 +24,14 @@
             android:layout_height="wrap_content"
             android:text="Name Song"
             android:textSize="20dp"
-            android:textColor="@color/white"
+            android:textColor="@color/textcolor"
             android:layout_marginBottom="5dp"/>
         <TextView
             android:id="@+id/tv_nameArtist"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Artist"
-            android:textColor="@color/white"
+            android:textColor="@color/textcolor"
             android:layout_marginTop="10dp"/>
     </LinearLayout>
 
@@ -40,7 +41,7 @@
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_gravity="center_vertical"
-        android:background="@android:color/transparent"
+        android:background="@color/primary"
         android:src="@drawable/ic_more" />
 
 </LinearLayout>

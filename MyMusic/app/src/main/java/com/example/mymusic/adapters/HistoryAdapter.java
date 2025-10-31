@@ -15,7 +15,7 @@ import com.example.mymusic.models.Artist;
 import com.example.mymusic.models.Playlist;
 import com.example.mymusic.models.Song;
 import com.example.mymusic.services.MusicPlayerService;
-
+import com.google.firebase.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,7 +35,16 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     public void setMusicPlayerService(MusicPlayerService service) {
         this.musicPlayerService = service;
     }
+    public void updateData(List<Object> newItems) {
+        if (newItems == null) return;
 
+        // Thay thế danh sách cũ
+        this.items.clear();
+        this.items.addAll(newItems);
+
+        // Cập nhật lại UI
+        notifyDataSetChanged();
+    }
     public HistoryAdapter(Context context, List<Object> items,SongAdapter songAdapter ) {
         this.context = context;
         this.items = items;

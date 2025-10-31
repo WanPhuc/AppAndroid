@@ -9,7 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Hẹn giờ tắt nhạc"
-        android:textColor="@color/white"
+        android:textColor="@color/textcolor"
         android:textSize="22dp"
         android:textStyle="bold"/>
 
@@ -18,7 +18,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/tvTime"
         android:text="0 phút"
-        android:textColor="@color/white"
+        android:textColor="@color/textcolor"
         android:textSize="22dp"
         android:layout_marginTop="8dp"/>
 
@@ -31,7 +31,7 @@
     <Button
         android:id="@+id/btnSet"
         android:text="Đặt giờ"
-        android:textColor="@color/white"
+        android:textColor="@color/textcolor"
         android:backgroundTint="@color/primary"
         android:layout_marginTop="16dp"
         android:layout_width="match_parent"

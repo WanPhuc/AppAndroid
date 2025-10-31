@@ -10,7 +10,7 @@
         android:layout_marginTop="10dp"
         android:fontFamily="sans-serif-black"
         android:text="Thư Viện"
-        android:textColor="@color/white"
+        android:textColor="@color/textcolor"
         android:textSize="30dp" />
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btn_addPlaylist_library"
@@ -44,8 +44,8 @@
             android:layout_width="120dp"
             android:layout_height="30dp"
             android:text="Danh Sách Phát"
-            android:textColor="@color/white"
-            android:background="@drawable/bg_filterlibrary_unselect"
+            android:textColor="@color/textcolor"
+            android:background="@color/primary"
             android:gravity="center"
             android:layout_marginLeft="10dp" />
 
@@ -85,8 +85,8 @@
             android:layout_width="70dp"
             android:layout_height="30dp"
             android:text="Nghệ Sĩ"
-            android:textColor="@color/white"
-            android:background="@drawable/bg_filterlibrary_unselect"
+            android:textColor="@color/textcolor"
+            android:background="@color/primary"
             android:gravity="center"
             android:layout_marginLeft="10dp" />
     </LinearLayout>
@@ -103,7 +103,7 @@
             android:text="↓↑ Mặc định"
             android:fontFamily="sans-serif-medium"
             android:textSize="16dp"
-            android:textColor="@color/white"
+            android:textColor="@color/textcolor"
             android:layout_marginTop="10dp"
             android:layout_marginRight="10dp"/>
     </LinearLayout>

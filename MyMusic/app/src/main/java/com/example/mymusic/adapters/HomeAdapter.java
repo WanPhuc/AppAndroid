@@ -4,6 +4,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.ServiceConnection;
 import android.os.IBinder;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +22,7 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.example.mymusic.R;
 import com.example.mymusic.activities.MainActivity;
 import com.example.mymusic.fragments.CategoryPlaylistFragment;
+import com.example.mymusic.fragments.PlaySongFragment;
 import com.example.mymusic.fragments.PlayedSongDetailFragment;
 import com.example.mymusic.fragments.SearchFragment;
 import com.example.mymusic.models.Artist;
@@ -43,6 +45,7 @@ public class HomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private  List<Object> items; // chứa GreetingSection hoặc SectionData
     private  ArrayList<Playlist> playlists;
     private  ArrayList<Artist> artists;
+    private PlaySongFragment playSongFragment = new PlaySongFragment();
 
     public  MusicPlayerService musicPlayerService;
     private  boolean isServiceBound = false;
@@ -168,8 +171,9 @@ public class HomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 musicPlayerService.playSong(song);
                 //hiện mini playẻr
                 if (context instanceof MainActivity) {
-                    ((MainActivity) context).showMiniPlayer(song);
+                    ((MainActivity) context).showMiniPlayer(song,songsList,artists);
                 }
+                playSongFragment.SetArrayListSong(songsList,artists);
             });
             //set layout
             adapter.setCompactLayout(true);
@@ -228,7 +232,9 @@ public class HomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 musicPlayerService.playSong(song);
                 //hiện mini playẻr
                 if (context instanceof MainActivity) {
-                    ((MainActivity) context).showMiniPlayer(song);
+                    ((MainActivity) context).showMiniPlayer(song,songsList,artists);
+
+
                 }
             });
             //set layout

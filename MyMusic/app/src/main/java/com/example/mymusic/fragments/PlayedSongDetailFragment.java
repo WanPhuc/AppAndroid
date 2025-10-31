@@ -35,7 +35,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
-
+import com.google.firebase.Timestamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -127,64 +127,62 @@ public class PlayedSongDetailFragment extends Fragment implements MusicPlayerSer
         String userID = FirebaseAuth.getInstance().getUid();
         if (userID == null) return;
 
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-
         repo.listenRecentlyPlayed(songs -> {
             playedList.clear();
             playedList.addAll(songs);
 
-            // Danh sách task để chờ tất cả cùng hoàn thành
-            List<com.google.android.gms.tasks.Task<DocumentSnapshot>> tasks = new ArrayList<>();
-            Map<String, List<Song>> groupedByDate = new LinkedHashMap<>();
-
-            for (Song song : songs) {
-                var task = db.collection("Users")
-                        .document(userID)
-                        .collection("RecentlyPlayed")
-                        .document(song.getSongID())
-                        .get()
-                        .addOnSuccessListener(doc -> {
-                            Timestamp ts = doc.getTimestamp("timestamp");
-                            if (ts == null) return;
-
-                            String date = new java.text.SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                                    .format(ts.toDate());
-
-                            groupedByDate
-                                    .computeIfAbsent(date, k -> new ArrayList<>())
-                                    .add(song);
-                        });
-                tasks.add(task);
+            Log.d("PlayedSongDetailFragment", "=== LISTENED SONGS (sorted) ===");
+            for (Song s : songs) {
+                Log.d("PlayedSongDetailFragment", s.getTitle());
             }
 
-            // Khi tất cả get() hoàn thành → hiển thị
-            com.google.android.gms.tasks.Tasks.whenAllSuccess(tasks)
-                    .addOnSuccessListener(results -> {
-                        List<Object> displayList = new ArrayList<>();
+            repo.listenAllArtists(artists -> {
+                artistList.clear();
+                artistList.addAll(artists);
+                songAdapter.updateArtists(artists);
 
-                        for (Map.Entry<String, List<Song>> entry : groupedByDate.entrySet()) {
-                            displayList.add("Ngày " + entry.getKey());
-                            displayList.addAll(entry.getValue());
-                        }
+                // ✅ Group theo ngày trực tiếp từ danh sách songs đã sort
+                Map<String, List<Song>> groupedByDate = new LinkedHashMap<>();
+                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
 
-                        if (historyAdapter == null) {
-                            historyAdapter = new HistoryAdapter(getContext(), displayList, songAdapter);
-                            if (musicPlayerService != null)
-                                historyAdapter.setMusicPlayerService(musicPlayerService);
-                            recyclerView.setAdapter(historyAdapter);
-                        } else {
-                            // update dữ liệu cũ thay vì notify từng lần
-                            historyAdapter = new HistoryAdapter(getContext(), displayList, songAdapter);
-                            recyclerView.setAdapter(historyAdapter);
-                        }
+                for (Song song : songs) {
+                    // Lấy timestamp từ RecentlyPlayed (đã có trong repo listener)
+                    // => Nếu bạn không lưu timestamp trong Song, thì tạo map trong repo
+                    // => Ở đây giả sử bạn có repo.getTimestamp(songID)
+                    Timestamp ts = repo.getTimestamp(song.getSongID());
+                    if (ts == null) continue;
 
-                        Toast.makeText(getContext(),
-                                "Đã tải " + songs.size() + " bài hát nghe gần đây",
-                                Toast.LENGTH_SHORT).show();
-                    })
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(getContext(), "Lỗi khi tải lịch sử: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    });
+                    String date = sdf.format(ts.toDate());
+                    groupedByDate.computeIfAbsent(date, k -> new ArrayList<>()).add(song);
+                }
+
+                // ✅ Tạo danh sách hiển thị đúng thứ tự
+                List<Object> displayList = new ArrayList<>();
+                for (Map.Entry<String, List<Song>> entry : groupedByDate.entrySet()) {
+                    displayList.add("Ngày " + entry.getKey());
+                    displayList.addAll(entry.getValue());
+                    Log.d("HISTORY_DEBUG", "DisplayList size = " + displayList.size());
+                }
+                Log.d("HISTORY_DEBUG", "DisplayList size = " + displayList.size());
+                for (Object o : displayList) {
+                    if (o instanceof Song) {
+                        Log.d("HISTORY_DEBUG", "Song: " + ((Song) o).getTitle());
+                    } else {
+                        Log.d("HISTORY_DEBUG", "Header: " + o);
+                    }
+                }
+
+                // ✅ Cập nhật adapter
+                if (historyAdapter == null) {
+                    historyAdapter = new HistoryAdapter(getContext(), displayList, songAdapter);
+                    recyclerView.setAdapter(historyAdapter);
+                    if (musicPlayerService != null)
+                        historyAdapter.setMusicPlayerService(musicPlayerService);
+
+                } else {
+                    historyAdapter.updateData(displayList);
+                }
+            });
         });
     }
 

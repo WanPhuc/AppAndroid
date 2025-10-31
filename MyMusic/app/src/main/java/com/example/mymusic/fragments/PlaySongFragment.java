@@ -54,16 +54,18 @@ public class PlaySongFragment extends Fragment implements MusicPlayerService.Pla
     private ImageView imgSong, btnPlay, btnNext, btnPrev,btnShuffle;
     private TextView tvSongName, tvPlayArtistName, tvTotal, tvCurrentTime;
     private ImageButton btn_back;
-    private RecyclerView recy_ActiPlaySong;
+    private RecyclerView rcvplayingsong;
     private SeekBar seekBar;
     private MediaPlayer mediaPlayer;
     private Timer timer;
     private Song song;
-    private ArrayList<Artist> artistList = new ArrayList<>();
     private MusicPlayerService musicPlayerService;
     private boolean isServiceBound = false;
     private android.os.Handler handler = new android.os.Handler();
     private Runnable updateSeekBarRunnable;
+    private ArrayList<Song> songsList = new ArrayList<>();
+    private ArrayList<Artist> artistList = new ArrayList<>();
+    private ArrayList<Playlist> playlist = new ArrayList<>();
 
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
@@ -102,12 +104,39 @@ public class PlaySongFragment extends Fragment implements MusicPlayerService.Pla
         tvCurrentTime = view.findViewById(R.id.duration_song);
         seekBar = view.findViewById(R.id.seekBarSong);
         btnShuffle = view.findViewById(R.id.RandomSong_icon);
-
+        rcvplayingsong = view.findViewById(R.id.recyclerplayingsong);
         Bundle bundle = getArguments();
-        if (bundle != null) {
+        if (bundle != null && song == null) {
             song = (Song) bundle.getSerializable("song");
-
+            SetUpPlaySong(song);
         }
+        SongAdapter songAdapter = new SongAdapter(getContext(), songsList, playlist, artistList);
+        rcvplayingsong.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
+        rcvplayingsong.setAdapter(songAdapter);
+        songAdapter.setOnSongClickListener((song, position) -> {
+                    if (!isServiceBound) return;
+                    List<Song> currentServicePlaylist = musicPlayerService.getOriginalSongs();
+                    boolean isDifferentPlaylist = currentServicePlaylist == null
+                            || currentServicePlaylist.isEmpty()
+                            || currentServicePlaylist.size() != songsList.size()
+                            || !currentServicePlaylist.get(0).getSongID().equals(songsList.get(0).getSongID());
+
+                    if (isDifferentPlaylist) {
+                        // 🛑 Stop playlist cũ
+                        musicPlayerService.stop();
+                        // 🔁 Set playlist mới
+                        musicPlayerService.setSongs(new ArrayList<>(songsList));
+                    }
+
+                    // ▶️ Phát bài được click
+                    musicPlayerService.playSong(song);
+                    //songAdapter.setSelectedPosition(position);
+                    Log.d("ArtistName", "Tên nghệ sĩ: " + song);
+                    SetUpPlaySong(song);
+                    //songAdapter.setSelectedPosition(position);
+
+
+                });
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             private boolean wasPlayingBeforeSeek = false;
 
@@ -169,7 +198,7 @@ public class PlaySongFragment extends Fragment implements MusicPlayerService.Pla
                 ((MainActivity) getActivity()).showMiniPlayerUI();
             }
         });
-        SetUpPlaySong(song);
+
 
         btnShuffle.setOnClickListener(v -> {
             if (isServiceBound) {
@@ -178,10 +207,25 @@ public class PlaySongFragment extends Fragment implements MusicPlayerService.Pla
             }
         });
 
+        int newIndex = -1;
+        for (int i = 0; i < songsList.size(); i++) {
+            if (songsList.get(i).getSongID().equals(song.getSongID())) {
+                newIndex = i;
+                break;
+            }
+        }
+
+        // 🔹 Highlight bài hiện tại
+        if (newIndex != -1 && rcvplayingsong.getAdapter() instanceof SongAdapter) {
+            SongAdapter adapter = (SongAdapter) rcvplayingsong.getAdapter();
+            adapter.setSelectedPosition(newIndex);
+
+            // 🔹 Cuộn đến bài đó nếu đang ở xa
+            rcvplayingsong.smoothScrollToPosition(newIndex);
+        }
         return view;
     }
-    private void SetUpPlaySong(Song song){
-
+    public void SetUpPlaySong(Song song){
         if (song != null) {
             //tên bài
             tvSongName.setText(song.getTitle());
@@ -216,6 +260,9 @@ public class PlaySongFragment extends Fragment implements MusicPlayerService.Pla
                 .addOnFailureListener(e -> {
                     Log.e("ArtistName", "Lỗi khi lấy tên nghệ sĩ", e);
                 });
+        for (Song songs : songsList) {
+            Log.d("bai hát", songs.getTitle());
+        }
 
 
     }
@@ -247,6 +294,16 @@ public class PlaySongFragment extends Fragment implements MusicPlayerService.Pla
     @Override
     public void onSongChanged(Song song) {
         SetUpPlaySong(song);
+        seekBar.setMax(musicPlayerService.getDuration());
+        SongAdapter adapter = (SongAdapter) rcvplayingsong.getAdapter();
+        int newIndex = -1;
+        for (int i = 0; i < songsList.size(); i++) {
+            if (songsList.get(i).getSongID().equals(song.getSongID())) {
+                newIndex = i;
+                break;
+            }
+        }
+        adapter.setSelectedPosition(newIndex);
     }
 
     @Override
@@ -257,6 +314,10 @@ public class PlaySongFragment extends Fragment implements MusicPlayerService.Pla
     @Override
     public void onPlaylistChanged(List<Song> playlist) {
 
+    }
+    public void SetArrayListSong(ArrayList<Song> songs,ArrayList<Artist> artists){
+        this.songsList = songs;
+        this.artistList = artists;
     }
     private String formatTime(int millis) {
         int totalSeconds = millis / 1000;

@@ -35,16 +35,13 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".activities.MainActivity" android:exported="true"/>
+        <activity android:name=".activities.MainActivity" android:exported="true" />
         <activity android:name=".activities.RegisterActivity" android:exported="true"/>
         <service android:name=".services.MusicPlayerService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="mediaPlayback"
             tools:ignore="ForegroundServicePermission"/>
-
-
-
     </application>
 
 </manifest>

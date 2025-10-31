@@ -46,6 +46,7 @@ import javax.annotation.Nonnull;
 public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder> {
     private final ArrayList<Song> songs;
     private final ArrayList<Playlist> playlists;
+
     private final HashMap<String, String> artistMap;
     private Context context;
     private OnSongClickListener listener;
@@ -93,7 +94,9 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
         this.playlists = playlists;
         this.downloadManager = SongDownloadManager.getInstance(context);
         artistMap = new HashMap<>();
-        for (Artist a : artists) artistMap.put(a.getArtistID(), a.getName());
+        for (Artist a : artists) {
+            artistMap.put(a.getArtistID(), a.getName());
+        }
     }
 
     @Nonnull
@@ -146,7 +149,6 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
                     .into(imgSong);
 
             itemView.setOnClickListener(v -> {
-                Toast.makeText(context, "Bấm vào " + song.getTitle() , Toast.LENGTH_SHORT).show();
                 int pos = getAdapterPosition();
                 if (pos == RecyclerView.NO_POSITION) return;
 
@@ -188,12 +190,10 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
 
             if (position == selectedPosition) {
                 nameSong.setTextColor(context.getResources().getColor(R.color.select_song_play));
-            } else {
-                nameSong.setTextColor(context.getResources().getColor(android.R.color.white));
+            }else {
+                nameSong.setTextColor(context.getResources().getColor(R.color.textcolor));
             }
-
             itemView.setOnClickListener(v -> {
-                Toast.makeText(context, "Bấm vào " + song.getTitle() , Toast.LENGTH_SHORT).show();
                 int pos = getAdapterPosition();
                 if (pos == RecyclerView.NO_POSITION) return;
 
@@ -205,6 +205,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
 
                 if (listener != null) listener.onSongClick(song, pos);
                 addToRecentlyPlayed(song);
+
             });
 
             btnMore.setOnClickListener(v -> showPopupMenu(v, song));
@@ -470,6 +471,15 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
                 .document(song.getSongID())  // dùng songID làm key → tránh trùng
                 .set(data, SetOptions.merge()); // chỉ update timestamp nếu đã tồn tại
     }
+    public void setSelectedPosition(int position) {
+        int prev = selectedPosition;
+        selectedPosition = position;
+
+        if (prev != RecyclerView.NO_POSITION) {
+            notifyItemChanged(prev);
+        }
+        notifyItemChanged(selectedPosition);
+    }
     private void showCreatePlaylistDialog(Song song) {
         EditText input = new EditText(context);
         input.setHint("Nhập tên playlist");
@@ -546,15 +556,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
         notifyDataSetChanged();
     }
 
-    public void setSelectedPosition(int position) {
-        int prev = selectedPosition;
-        selectedPosition = position;
 
-        if (prev != RecyclerView.NO_POSITION) {
-            notifyItemChanged(prev);
-        }
-        notifyItemChanged(selectedPosition);
-    }
     public void bindSongView(SongViewHolder holder, Song song, int position, MusicPlayerService musicPlayerService) {
         Song currentSong = song;
         // Set tên bài hát
@@ -562,6 +564,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
 
         // Lấy tên ca sĩ từ artistMap dựa theo artistID
         String artistName = artistMap.get(song.getArtistID());
+
         holder.nameArtist.setText(artistName != null ? artistName : "Unknown");
 
         // Load ảnh bài hát
@@ -590,7 +593,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
             if (prev != RecyclerView.NO_POSITION) notifyItemChanged(prev);
             notifyItemChanged(selectedPosition);
             if (listener != null) listener.onSongClick(song, pos);
-            Toast.makeText(context, "bài " + song.getTitle(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "bài " + song.getTitle() + artistName, Toast.LENGTH_SHORT).show();
             if (musicPlayerService == null) {
                 Toast.makeText(context, "khong co musicPlayerService: ", Toast.LENGTH_SHORT).show();
                 return;
@@ -598,7 +601,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
             musicPlayerService.stop();
             musicPlayerService.playSong(song);
             if (context instanceof MainActivity) {
-                ((MainActivity) context).showMiniPlayer(song);
+                //((MainActivity) context).showMiniPlayer(song);
             }
 
         });

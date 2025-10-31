@@ -65,7 +65,7 @@
             android:layout_height="wrap_content"
             android:text="Quên mật khẩu ?"
             android:textSize="20dp"
-            android:textColor="@color/white"
+            android:textColor="@color/textcolor"
             android:layout_marginTop="20dp"/>
         <Button
             android:id="@+id/btn_signin"
@@ -73,7 +73,7 @@
             android:layout_height="wrap_content"
             android:text="Đăng nhập"
             android:textSize="20dp"
-            android:textColor="@color/black"
+            android:textColor="@color/textcolor"
             android:background="@drawable/bg_btnlogin"
             android:layout_marginTop="50dp"
             app:backgroundTint="@null"
@@ -89,7 +89,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Bạn chưa có tài khoản?"
-        android:textColor="@color/white"
+        android:textColor="@color/textcolor"
         android:textSize="20dp"/>
         <TextView
             android:id="@+id/tv_signup"

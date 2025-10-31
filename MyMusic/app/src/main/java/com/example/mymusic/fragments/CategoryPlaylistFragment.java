@@ -174,7 +174,7 @@ public class CategoryPlaylistFragment extends Fragment implements MusicPlayerSer
             playingsong = song;
             //hiện mini playẻr
             if (getActivity() instanceof MainActivity) {
-                ((MainActivity) getActivity()).showMiniPlayer(song);
+                ((MainActivity) getActivity()).showMiniPlayer(song, songsList, artistList);
             }
 
             updateUI();

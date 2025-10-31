@@ -1,7 +1,8 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Base.Theme.MyMusic" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
-    </style>
+    <color name="primary">#EDEDED</color> <!-- nền sáng -->
+    <color name="textcolor">#000000</color><!-- chữ sáng -->
+    <color name="highlight_unselect_light">#00BCD4</color>
+    <color name="miniplayer_backgroud">#38A3FB</color>
+    <color name="select_song_play">#FF226D</color>
 </resources>

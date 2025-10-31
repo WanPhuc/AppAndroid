@@ -22,6 +22,6 @@
         android:ellipsize="end"
         android:singleLine="true"
         android:text="Artist"
-        android:textColor="@color/white"
+        android:textColor="@color/textcolor"
         android:textSize="14sp" />
 </LinearLayout>

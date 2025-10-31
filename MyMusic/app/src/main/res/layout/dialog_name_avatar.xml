@@ -13,7 +13,7 @@
     <EditText
         android:id="@+id/edtName"
         android:hint="Nhập tên mới"
-        android:textColor="@color/white"
+        android:textColor="@color/textcolor"
         android:textColorHint="#888888"
         android:layout_marginBottom="16dp"
         android:backgroundTint="@color/white"
@@ -25,7 +25,7 @@
     <Button
         android:id="@+id/btnSave"
         android:text="Lưu"
-        android:textColor="#FFFFFF"
+        android:textColor="@color/textcolor"
         android:backgroundTint="@color/primary"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

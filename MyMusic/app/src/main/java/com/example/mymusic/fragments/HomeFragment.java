@@ -80,7 +80,6 @@ public class HomeFragment extends Fragment implements MusicPlayerService.PlayerL
                 homeAdapter.setMusicPlayerService(musicPlayerService);
 
             }
-
             // Đăng ký listener (UI update)
             musicPlayerService.addPlayerListener(HomeFragment.this);
 

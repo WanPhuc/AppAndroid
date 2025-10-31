@@ -8,6 +8,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
@@ -24,10 +25,13 @@ import com.example.mymusic.R;
 import com.example.mymusic.adapters.MainAdapter;
 import com.example.mymusic.fragments.MiniPlayerFragment;
 import com.example.mymusic.fragments.PlaySongFragment;
+import com.example.mymusic.models.Artist;
 import com.example.mymusic.models.Song;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreSettings;
+
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
     private ViewPager2 viewPager2;
@@ -76,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
         getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.fl_miniplay, miniPlayerFragment)
-                .commit();
+                .commitNow();
         miniPlayerContainer.setVisibility(View.GONE);
 
 
@@ -105,11 +109,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public void showMiniPlayer(Song song) {
+    public void showMiniPlayer(Song song, ArrayList<Song> songs, ArrayList<Artist> artists) {
         miniPlayerContainer.setVisibility(View.VISIBLE);
         miniPlayerFragment.bindSong(song);
+        miniPlayerFragment.SetArrayListSong(songs,artists);
+        //Toast.makeText(this, "MiniPlayer nhận " + songs.size() + " bài và " + artists.size() + " nghệ sĩ", Toast.LENGTH_SHORT).show();
     }
-    public void openFullPlayer(Song song) {
+    public void setMiniPlayer() {
+
+    }
+    public void openFullPlayer(Song song, ArrayList<Song> songs, ArrayList<Artist> artists) {
         if (miniPlayerContainer != null) miniPlayerContainer.setVisibility(View.GONE);
         if (fullContainer != null) fullContainer.setVisibility(View.VISIBLE);
 
@@ -117,6 +126,9 @@ public class MainActivity extends AppCompatActivity {
         Bundle bundle = new Bundle();
         bundle.putSerializable("song", song);
         playSongFragment.setArguments(bundle);
+        int newIndex = -1;
+
+        playSongFragment.SetArrayListSong(songs,artists);
 
         getSupportFragmentManager()
                 .beginTransaction()

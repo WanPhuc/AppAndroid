@@ -5,7 +5,8 @@
         android:id="@+id/homeicon"
         android:title="Trang Chủ"
         android:icon="@drawable/ic_home"
-        app:showAsAction="always"/>
+        app:showAsAction="always"
+        android:iconTint="@color/textcolor"/>
     <item
         android:id="@+id/searchicon"
         android:title="Tìm Kiếm"

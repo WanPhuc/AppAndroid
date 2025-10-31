@@ -19,7 +19,7 @@
             android:text="Tiêu đề"
             android:textStyle="bold"
             android:textSize="18sp"
-            android:textColor="@android:color/white"/>
+            android:textColor="@color/textcolor"/>
 
         <ImageButton
             android:id="@+id/btn_detail"

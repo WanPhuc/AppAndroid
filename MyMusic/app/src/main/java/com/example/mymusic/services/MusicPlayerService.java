@@ -341,7 +341,9 @@ public class MusicPlayerService extends android.app.Service implements MediaPlay
         } else {
             currentSongIndex = (currentSongIndex + 1) % playingSongs.size();
         }
+
         _playSong(playingSongs.get(currentSongIndex));
+
     }
 
     public void playPrevious() {

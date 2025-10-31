@@ -7,10 +7,11 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
+
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.Fragment;
 
@@ -43,21 +44,19 @@ public class AccountFragment extends Fragment {
         // ✅ Khôi phục trạng thái Dark Mode từ SharedPreferences
         SharedPreferences prefs = requireContext().getSharedPreferences("AppSettings", getContext().MODE_PRIVATE);
         boolean isDarkMode = prefs.getBoolean("DarkModeEnabled", false);
-        switchDarkMode.setChecked(isDarkMode);
-        AppCompatDelegate.setDefaultNightMode(
-                isDarkMode ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO
-        );
+
+
 
         // ✅ Bật/tắt Dark Mode khi người dùng thay đổi switch
         switchDarkMode.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-                Toast.makeText(getContext(), "Đã bật chế độ tối 🌙", Toast.LENGTH_SHORT).show();
-            } else {
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-                Toast.makeText(getContext(), "Đã tắt chế độ tối ☀️", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getContext(), "Đã bật chế độ tối 🌙", Toast.LENGTH_SHORT).show();
+            } else {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                //Toast.makeText(getContext(), "Đã tắt chế độ tối ☀️", Toast.LENGTH_SHORT).show();
             }
-
+            ((AppCompatActivity) requireActivity()).getDelegate().applyDayNight();
             // 🔹 Lưu trạng thái
             prefs.edit().putBoolean("DarkModeEnabled", isChecked).apply();
         });
@@ -66,7 +65,7 @@ public class AccountFragment extends Fragment {
             NameAvatarDialogFragment dialog = new NameAvatarDialogFragment();
             dialog.setOnNameUpdatedListener(newName -> {
                 tvUsername.setText("Xin chào: " + newName);
-                Toast.makeText(getContext(), "Tên mới: " + newName, Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getContext(), "Tên mới: " + newName, Toast.LENGTH_SHORT).show();
             });
             dialog.show(getParentFragmentManager(), "NameAvatarDialog");
         });
@@ -92,12 +91,12 @@ public class AccountFragment extends Fragment {
                 String username = documentSnapshot.getString("username");
                 if (username != null) {
                     tvUsername.setText("Xin chào: " + username);
-                    Toast.makeText(getContext(), "Xin chào: " + username, Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(getContext(), "Xin chào: " + username, Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(getContext(), "Không có username trong Firestore", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(getContext(), "Không có username trong Firestore", Toast.LENGTH_SHORT).show();
                 }
             } else {
-                Toast.makeText(getContext(), "Không tìm thấy người dùng", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getContext(), "Không tìm thấy người dùng", Toast.LENGTH_SHORT).show();
             }
         });
     }
